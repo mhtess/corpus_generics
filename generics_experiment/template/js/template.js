@@ -32,12 +32,11 @@ function make_slides(f) {
 	$("#textbox").hide();
 	$("#likert").hide();
 	this.stim = stim;
-	//TODO(chakia): from stimuli.js get the sentence to present and store in .sentence. 
-	//$(".sentence").html("");
-	
-	//fills in question with necessary noun and verb information
-	var question = stim.question.replace("[plural noun]", "dogs"); //TODO(chakia): fill in with noun from stimuli.js.
-	question = question.replace("[verb phrase]", "bark"); //TODO(chakia): the same with verb phrase.
+	var generic = generics[Math.floor(Math.random() * generics.length)];
+	this.generic = generic;
+	$(".sentence").html(generic.sentence);
+	var question = stim.question.replace("[plural noun]", generic.noun);
+	question = question.replace("[verb phrase]", generic.verb);
 	$(".question").html(question);		
 	switch(stim.dependent_measure) {
 	case "textbox":
@@ -82,8 +81,10 @@ function make_slides(f) {
       exp.data_trials.push({
         "trial_type" : "single_generic_trial",
         "response" : exp.responseValue,
-	"question" : this.stim.question
-	//TODO(chakia) -- push more information, going to come from stimuli.js.
+	"question" : this.stim.question,
+	"noun" : this.generic.noun,
+	"verb phrase" : this.generic.verb,
+	"entire sentence" : this.generic.sentence
       });
     }
   });

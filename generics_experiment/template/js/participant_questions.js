@@ -6,7 +6,7 @@ var questions = [
     {question: "Are [plural noun] animals?", dependent_measure: "binary"},
     {question: "Around how many [plural noun] would you say there are?", dependent_measure: "textbox"},
     {question: "What percentage of [plural noun] would you say [verb phrase]", dependent_measure: "slider"},
-    {question: "Are [plural noun] pertaining to a specific group of people? (lawyers, teachers, etc.)", dependent_measure: "binary"},
+    {question: "Does [plural noun] pertaining to a specific group of people? (lawyers, teachers, etc.)", dependent_measure: "binary"},
     {question: "Is this statement debatable?", dependent_measure: "binary"},
 ]
 
