@@ -41,11 +41,12 @@ function make_slides(f) {
     /* trial information for this block
      (the variable 'stim' will change between each of these values,
       and for each of these, present_handle will be run.) */
-    present : [
+    present : simuli(3, true),
+    /*present : [
       {subject: "dog", object: "ball"},
       {subject: "cat", object: "windowsill"},
       {subject: "bird", object: "shiny object"},
-    ],
+    ],*/
 
     //this gets run only at the beginning of the block
     present_handle : function(stim) {
@@ -54,7 +55,8 @@ function make_slides(f) {
       this.stim = stim; //I like to store this information in the slide so I can record it later.
 
 
-      $(".prompt").html(stim.subject + "s like " + stim.object + "s.");
+      $(".prompt").html(stim.Item_ID + " " + stim.Noun + " " + stim.VP);
+      //$(".prompt").html(stim.subject + "s like " + stim.object + "s.");
       this.init_sliders();
       exp.sliderPost = null; //erase current slider value
     },
