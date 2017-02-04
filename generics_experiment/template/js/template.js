@@ -32,11 +32,12 @@ function make_slides(f) {
 	$("#textbox").hide();
 	$("#likert").hide();
 	this.stim = stim;
+  var generics = generate_stim(number_of_generic_trials, true);
 	var generic = generics[Math.floor(Math.random() * generics.length)];
 	this.generic = generic;
-	$(".sentence").html(generic.sentence);
-	var question = stim.question.replace("[plural noun]", generic.noun);
-	question = question.replace("[verb phrase]", generic.verb);
+	$(".sentence").html("\"" + generic.Sentence + "\""); // Replace .Sentence with the name of your sentence column
+	var question = stim.question.replace("[plural noun]", generic.Noun); // Replace .Noun with the name of your noun column
+	question = question.replace("[verb phrase]", generic.VP); // Replace .VP with the name of your verb column
 	$(".question").html(question);		
 	switch(stim.dependent_measure) {
 	case "textbox":
@@ -82,9 +83,9 @@ function make_slides(f) {
         "trial_type" : "single_generic_trial",
         "response" : exp.responseValue,
 	"question" : this.stim.question,
-	"noun" : this.generic.noun,
-	"verb phrase" : this.generic.verb,
-	"entire sentence" : this.generic.sentence
+	"noun" : this.generic.Noun, // Same instructions as above
+	"verb phrase" : this.generic.VP, // ""
+	"entire sentence" : this.generic.Sentence // ""
       });
     }
   });
