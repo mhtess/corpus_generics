@@ -35,7 +35,7 @@ function make_slides(f) {
   var generics = generate_stim(number_of_generic_trials, true);
 	var generic = generics[Math.floor(Math.random() * generics.length)];
 	this.generic = generic;
-	var contexthtml = "... " + generic.Context;
+	var contexthtml = "Read the following conversation snippet:<br><br>... " + generic.Context;
     contexthtml = contexthtml.replace(/###speakera(\d+)./g, "<br><b>Speaker #1:</b>");
     contexthtml = contexthtml.replace(/###speakerb(\d+)./g, "<br><b>Speaker #2:</b>");
     contexthtml = contexthtml.replace(/###/g, " ");
