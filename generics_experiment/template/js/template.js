@@ -35,11 +35,8 @@ function make_slides(f) {
   var generics = generate_stim(number_of_generic_trials, true);
 	var generic = generics[Math.floor(Math.random() * generics.length)];
 	this.generic = generic;
-	var contexthtml = "Read the following conversation snippet:<br><br>... " + generic.Context;
-    contexthtml = contexthtml.replace(/###speakera(\d+)./g, "<br><b>Speaker #1:</b>");
-    contexthtml = contexthtml.replace(/###speakerb(\d+)./g, "<br><b>Speaker #2:</b>");
-    contexthtml = contexthtml.replace(/###/g, " ");
-    bare_plural = generic.Noun + " " + generic.VP
+	var contexthtml = this.format_context(generic.Context);
+    bare_plural = generic.Noun + " " + generic.VP;
     usentence = generic.Sentence.replace(bare_plural, "<u>" + bare_plural + "</u>");
     $(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
 	var question = stim.question.replace("[plural noun]", generic.Noun); // Replace .Noun with the name of your noun column
@@ -63,6 +60,7 @@ function make_slides(f) {
     default:
         $("#rate").show();
         this.init_numeric_sliders();
+        $(".slider_number").html("--");
         exp.sliderPost = null;
         break;
 	}
@@ -78,6 +76,26 @@ function make_slides(f) {
         "present" data. (and only *after* responses are logged) */
             _stream.apply(this);
 	}
+    },
+
+    format_context : function(context) {
+        contexthtml = context.replace(/###speakera(\d+)./g, "<br><b>Speaker #1:</b>");
+        contexthtml = contexthtml.replace(/###speakerb(\d+)./g, "<br><b>Speaker #2:</b>");
+        contexthtml = contexthtml.replace(/###/g, " ");
+        if (!contexthtml.startsWith("<br><b>Speaker #")) {
+            var ssi = contexthtml.indexOf("Speaker #");
+            switch(contexthtml[ssi+"Speaker #".length]) {
+            case "1":
+                contexthtml = "<br><b>Speaker #2:</b> " + contexthtml;
+                break;
+            case "2":
+                contexthtml = "<br><b>Speaker #1:</b> " + contexthtml;
+                break;
+            default:
+                break;
+            }
+        };
+        return contexthtml;
     },
 
     init_sliders : function() {
