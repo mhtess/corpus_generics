@@ -1,0 +1,1 @@
+@BAREPLURAL >> (TOP << (/^NP/ << (NNS) & << JJS=print))
