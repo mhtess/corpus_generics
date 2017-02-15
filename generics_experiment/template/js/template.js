@@ -1,4 +1,5 @@
-var number_of_generic_trials = 10;
+var number_of_generic_trials = 50;
+var trialcounter = 0;
 
 function make_slides(f) {
   var   slides = {};
@@ -32,9 +33,9 @@ function make_slides(f) {
 	$("#textbox").hide();
 	$("#rate").hide();
     this.stim = stim;
-  var generics = generate_stim(number_of_generic_trials, true);
-	var generic = generics[Math.floor(Math.random() * generics.length)];
-	this.generic = generic;
+    var generics = generate_stim(number_of_generic_trials, true);
+	generic = generics[trialcounter];
+    this.generic = generic;
 	var contexthtml = this.format_context(generic.Context);
     bare_plural = generic.Noun + " " + generic.VP;
     usentence = generic.Sentence.replace(bare_plural, "<u>" + bare_plural + "</u>");
@@ -65,6 +66,7 @@ function make_slides(f) {
         break;
 	}
 	exp.responseValue = null;
+    trialcounter++;
     },
 
     button : function() {

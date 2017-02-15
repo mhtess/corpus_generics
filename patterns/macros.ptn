@@ -3,7 +3,6 @@
 @ NP            /^NP/;
 @ VP            /^VP/;
 @ PP            /^PP/;
-@ STRICTBP    (NNS @>> (/^NP/ << of | << /^PRP/ | << DT | << JJS)) . (VP < VBP);
-@ BAREPLURAL    (NNS @>> (/^NP/ < /^PRP/ | < DT)) . (VP < VBP);
+@ BAREPLURAL    (NNS @>> (/^NP/ << of | << /^PRP/ | << DT | << JJS)) . (VP < (VBP @< must @< should @< ought)) @>> (TOP << /UH/);
+@ LOOSEBAREPLURAL    (NNS @>> (/^NP/ < /^PRP/ | < DT)) . (VP < VBP);
 @ BPCONTEXT /^TOP/ << @BAREPLURAL;
-@ INTERRUPT /UH/ > @BAREPLURAL;
