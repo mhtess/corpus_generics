@@ -1,4 +1,4 @@
-var path = '../../generics_project/results/';
+var path = '../../../generics_project/results/';
 var fname = 'swbd.tab';
 
 function get_data(fullpath) {
