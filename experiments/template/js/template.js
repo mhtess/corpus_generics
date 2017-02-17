@@ -1,4 +1,5 @@
-var number_of_generic_trials = 10;
+var number_of_generic_trials = 50;
+var trialcounter = 0;
 
 function make_slides(f) {
   var   slides = {};
@@ -30,12 +31,15 @@ function make_slides(f) {
 	$(".err").hide();
 	$("#binary").hide();
 	$("#textbox").hide();
-	$("#likert").hide();
-	this.stim = stim;
-  var generics = generate_stim(number_of_generic_trials, true);
-	var generic = generics[Math.floor(Math.random() * generics.length)];
-	this.generic = generic;
-	$(".sentence").html("\"" + generic.Sentence + "\""); // Replace .Sentence with the name of your sentence column
+	$("#rate").hide();
+    this.stim = stim;
+    var generics = generate_stim(number_of_generic_trials, true);
+	generic = generics[trialcounter];
+    this.generic = generic;
+	var contexthtml = this.format_context(generic.Context);
+    bare_plural = generic.Noun + " " + generic.VP;
+    usentence = generic.Sentence.replace(bare_plural, "<u>" + bare_plural + "</u>");
+    $(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
 	var question = stim.question.replace("[plural noun]", generic.Noun); // Replace .Noun with the name of your noun column
 	question = question.replace("[verb phrase]", generic.VP); // Replace .VP with the name of your verb column
 	$(".question").html(question);		
@@ -54,11 +58,15 @@ function make_slides(f) {
 		exp.responseValue = $(this).val();
 	    });
 	    break;
-	default:
-	    $("#likert").show();
-            this.init_sliders(); //TODO(chakia): what do we actually what on these sliders? What is the scale?
+    default:
+        $("#rate").show();
+        this.init_numeric_sliders();
+        $(".slider_number").html("--");
+        exp.sliderPost = null;
+        break;
 	}
 	exp.responseValue = null;
+    trialcounter++;
     },
 
     button : function() {
@@ -72,10 +80,42 @@ function make_slides(f) {
 	}
     },
 
+    format_context : function(context) {
+        contexthtml = context.replace(/###speakera(\d+)./g, "<br><b>Speaker #1:</b>");
+        contexthtml = contexthtml.replace(/###speakerb(\d+)./g, "<br><b>Speaker #2:</b>");
+        contexthtml = contexthtml.replace(/###/g, " ");
+        if (!contexthtml.startsWith("<br><b>Speaker #")) {
+            var ssi = contexthtml.indexOf("Speaker #");
+            switch(contexthtml[ssi+"Speaker #".length]) {
+            case "1":
+                contexthtml = "<br><b>Speaker #2:</b> " + contexthtml;
+                break;
+            case "2":
+                contexthtml = "<br><b>Speaker #1:</b> " + contexthtml;
+                break;
+            default:
+                break;
+            }
+        };
+        return contexthtml;
+    },
+
     init_sliders : function() {
       utils.make_slider("#single_slider", function(event, ui) {
         exp.responseValue = ui.value;
       });
+    },
+
+    init_numeric_sliders : function() {
+        utils.make_slider("#single_slider", this.make_slider_callback());
+    },
+
+    make_slider_callback : function() {
+      return function(event, ui) {
+        exp.sliderPost = ui.value;
+        exp.responseValue = ui.value;
+        $(".slider_number").html(Math.round(exp.sliderPost*100) + "%");
+      };
     },
 
     log_responses : function() {

@@ -1,0 +1,1 @@
+((NNS=print @>> (/^NP/ < /^PRP/ | < DT)) . (VP < VBP))

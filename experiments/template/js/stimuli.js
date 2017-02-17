@@ -1,4 +1,4 @@
-var path = '../../generics_project/results/';
+var path = '../../../generics_project/results/';
 var fname = 'swbd.tab';
 
 function get_data(fullpath) {
@@ -16,7 +16,7 @@ function generate_stim(n, rand) {
     var raw = contents;
         var rows = raw.split('\n');
 
-	    var data = []
+	    var data = [];
 	    headings = rows[0].split('\t');
 
 	    if (rand == true) {

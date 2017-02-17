@@ -1,0 +1,8 @@
+@ WORD          /^'{0,1}[a-zA-Z]+.*/;
+@ TERMINAL      * !< *;
+@ NP            /^NP/;
+@ VP            /^VP/;
+@ PP            /^PP/;
+@ BAREPLURAL    (NNS @>> (/^NP/ << of | << /^PRP/ | << DT | << JJS)) . (VP < (VBP @< must @< should @< ought)) @>> (TOP << /UH/);
+@ LOOSEBAREPLURAL    (NNS @>> (/^NP/ < /^PRP/ | < DT)) . (VP < VBP);
+@ BPCONTEXT /^TOP/ << @BAREPLURAL;
