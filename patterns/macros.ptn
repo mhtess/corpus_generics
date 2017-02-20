@@ -3,6 +3,9 @@
 @ NP            /^NP/;
 @ VP            /^VP/;
 @ PP            /^PP/;
-@ BAREPLURAL    (NNS @>> (/^NP/ << of | << /^PRP/ | << DT | << JJS)) . (VP < (VBP @< must @< should @< ought)) @>> (TOP << /UH/);
+@ OVDET   * << of | << /^PRP/ | << /DT/ | << /JJS/ | << /JJR/;
+@ DEONT * << must | << should | << ought;
+@ DISFL * << /UH/ | << /DFL/ | << /UNF/ | = /UH/ | = /DFL/ | = /UNF/;
+@ BAREPLURAL    (/NNS/ @>> (/NP/ = @OVDET | = @DISFL)) . (/VP/ < (VBP @< /VBG/ & @= (@DEONT)) @= (@DISFL)); 
 @ LOOSEBAREPLURAL    (NNS @>> (/^NP/ < /^PRP/ | < DT)) . (VP < VBP);
 @ BPCONTEXT /^TOP/ << @BAREPLURAL;

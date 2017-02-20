@@ -1,6 +1,18 @@
 ### Versions of Pattern
 
-Current Pattern: 
+Current Pattern:
+- (/NNS/ @>> (/NP/ = @OVDET | = @DISFL)) . (/VP/ < (VBP @< /VBG/ & @= (@DEONT)) @= (@DISFL));
+  - OVDET stands for overt determiner, and is defined as:
+    - * << of | << /^PRP/ | << /DT/ | << /JJS/ | << /JJR/;
+  - DEONT stands for deontic, and is defined as:
+    - * << must | << should | << ought;
+  - DISFL stands for disfluency, and is defined as:
+    - * << /UH/ | << /DFL/ | << /UNF/ | = /UH/ | = /DFL/ | = /UNF/;
+  - The pattern then reads, a plural noun that is part of a noun phrase without overt determiners or disfluencies, followed by a present tense (non-gerund, non-deontic) verb phrase, which itself contains no disfluencies.
+  - 405 cases
+
+
+Previous Pattern:
 - (NNS @>> (/^NP/ << of | << /^PRP/ | << DT | << JJS)) . (VP < (VBP @< must @< should @< ought)) @>> (TOP << /UH/)
   - Filters out modifiers, quantifiers, and deontics.
     - In the case of "need" and "have", 6 out of 44 cases were "need to" or "have to":
@@ -13,11 +25,9 @@ Current Pattern:
   - Also excludes sentences containing disfluencies.
   - 430 cases.
 
-Previous Pattern:
+Other Patterns to Note:
 - (NNS @>> (/^NP/ < /^PRP/ | < DT)) . (VP < VBP)
   - Around 800 cases.
-
-Other Patterns to Note:
 - /^NNS/ @, /^DT/ @, /^PRP/ . (/^VP/ < (/^VBP/ @< /^VP/))
   - Around 1000 cases.
   - Less restrictive with filtering out determiners.
