@@ -137,7 +137,8 @@ function make_slides(f) {
       exp.data_trials.push({
         "trial_type" : "single_generic_trial",
         "response" : exp.responseValue,
-	"question" : this.stim.question,
+    "question" : this.stim.question,
+    "tgrep id" : this.generic.Item_ID,
 	"noun" : this.generic.Noun, // Same instructions as above
 	"verb phrase" : this.generic.VP, // ""
 	"entire sentence" : this.generic.Sentence // ""
