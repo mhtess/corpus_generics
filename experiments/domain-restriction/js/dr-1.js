@@ -37,7 +37,7 @@ function make_slides(f) {
 	generic = generics[trialcounter];
     this.generic = generic;
 	var contexthtml = this.format_context(generic.Context);
-    bare_plural = generic.Noun + " " + generic.VP;
+    bare_plural = generic.NP + " " + generic.VP;
     usentence = generic.Sentence.replace(bare_plural, "<u>" + bare_plural + "</u>");
     $(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
 	var question = stim.question.replace("[plural noun]", generic.Noun); // Replace .Noun with the name of your noun column
@@ -124,7 +124,8 @@ function make_slides(f) {
         "trial_type" : "single_generic_trial",
         "response" : exp.responseValue,
 	"question" : this.stim.question,
-	"noun" : this.generic.Noun, // Same instructions as above
+    "tgrep id" : this.generic.Item_ID,
+	"noun phrase" : this.generic.NP, // Same instructions as above
 	"verb phrase" : this.generic.VP, // ""
 	"entire sentence" : this.generic.Sentence // ""
       });
