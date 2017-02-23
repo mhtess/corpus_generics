@@ -1,4 +1,4 @@
-var number_of_generic_trials = 25;
+var number_of_generic_trials = 30;
 var trialcounter = 0;
 
 function make_slides(f) {
