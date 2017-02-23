@@ -1,5 +1,8 @@
+var focus_flag = 1;
 var number_of_generic_trials = 30;
 var trialcounter = 0;
+var ordering_flag = 0;
+var generics = [];
 
 function make_slides(f) {
   var   slides = {};
@@ -24,7 +27,7 @@ function make_slides(f) {
     /* trial information for this block
      (the variable 'stim' will change between each of these values,
       and for each of these, present_handle will be run.) */
-    present : random_questions,
+    present : generics,
     
     //this gets run only at the beginning of the block
     present_handle : function(stim) {
@@ -32,56 +35,55 @@ function make_slides(f) {
 	$("#binary").hide();
 	$("#textbox").hide();
 	$("#rate").hide();
-    this.stim = stim;
-    var generics = generate_stim(number_of_generic_trials, true);
-	generic = generics[trialcounter];
-    this.generic = generic;
+	this.generic = stim;
+	var generic = stim;
 	var contexthtml = this.format_context(generic.Context);
-    bare_plural = generic.Noun + " " + generic.VP;
-    usentence = generic.Sentence.replace(bare_plural, "<u>" + bare_plural + "</u>");
-    $(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
+	bare_plural = generic.NP + " " + generic.VP;
+	usentence = generic.Sentence.replace(bare_plural, "<u>" + bare_plural + "</u>");
+	$(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
+	this.question;
 	var radio_button_text_1;
 	var radio_button_text_2;
 	if (focus_flag == 0) {
-	    radio_button_text_1 = 'What actions or qualities are characteristic of "[plural noun]"?';
-	    radio_button_text_2 = 'What entities or things "[verb phrase]"?';
+	    this.question = "In the underlined statement, what question was the speaker addressing?";
+	    if (ordering_flag == 0) {
+		$('input[value="radio1"][name="binarychoice"]').val("NP Focus");
+		$('input[value="radio2"][name="binarychoice"]').val("VP Focus");
+		radio_button_text_1 = 'What qualities or actions are characteristic of <strong>[plural noun]</strong>?';
+		radio_button_text_2 = 'What entities or things <strong>[verb phrase]</strong>?';
+	    } else {
+		$('input[value="radio1"][name="binarychoice"]').val("VP Focus");
+                $('input[value="radio2"][name="binarychoice"]').val("NP Focus");
+		radio_button_text_1 = 'What entities or things <strong>[verb phrase]</strong>?';
+		radio_button_text_2 = 'What qualities or actions are characteristic of <strong>[plural noun]</strong>?';
+	    }
 	} else {
-	    radio_button_text_1 = "that [plural noun] (as opposed to other entities or things) [verb phrase]";
-	    radio_button_text_2 = "that [plural noun] [verb phrase] (as opposed to other qualities or actions)?";
+	    this.question = "In the underlined statement, what do you think the speaker meant?";
+	    if (ordering_flag == 0) {
+		$('input[value="radio1"][name="binarychoice"]').val("NP Focus");
+                $('input[value="radio2"][name="binarychoice"]').val("VP Focus");
+		radio_button_text_1 = "that <strong>[plural noun]</strong> (as opposed to other entities or things) [verb phrase]";
+		radio_button_text_2 = "that [plural noun] <strong>[verb phrase]</strong> (as opposed to having other qualities or performing other actions)?";
+	    } else {
+		$('input[value="radio1"][name="binarychoice"]').val("VP Focus");
+                $('input[value="radio2"][name="binarychoice"]').val("NP Focus");
+		radio_button_text_1 = "that [plural noun] <strong>[verb phrase]</strong> (as opposed to having other qualities or performing other actions)?";
+		radio_button_text_2 = "that <strong>[plural noun]</strong> (as opposed to other entities or things) [verb phrase]";
+	    }
 	}
-	radio_button_text_1 = radio_button_text_1.replace("[plural noun]", generic.Noun);
-	radio_button_text_2 = radio_button_text_2.replace("[plural noun]", generic.Noun);
+	radio_button_text_1 = radio_button_text_1.replace("[plural noun]", generic.NP);
+	radio_button_text_2 = radio_button_text_2.replace("[plural noun]", generic.NP);
 	radio_button_text_1 = radio_button_text_1.replace("[verb phrase]", generic.VP);
 	radio_button_text_2 = radio_button_text_2.replace("[verb phrase]", generic.VP);
 	$('label[for=input1]').html(radio_button_text_1);
 	$('label[for=input2]').html(radio_button_text_2);
-	var question = stim.question.replace("[plural noun]", generic.Noun); // Replace .Noun with the name of your noun column
-	question = question.replace("[verb phrase]", generic.VP); // Replace .VP with the name of your verb column
-	$(".question").html(question);		
-	switch(stim.dependent_measure) {
-	case "textbox":
-	    $("#textbox_response").val("");
-	    $("#textbox").show();
-	    $("#textbox_response").on('input', function() {
-		exp.responseValue = $(this).val();
-	    })
-            break;
-	case "binary":
-	    $('input[name="binarychoice"]').prop('checked', false);
-	    $("#binary").show();
-            $("input:radio[name=binarychoice]").click(function() {
-		exp.responseValue = $(this).val();
-	    });
-	    break;
-    default:
-        $("#rate").show();
-        this.init_numeric_sliders();
-        $(".slider_number").html("--");
-        exp.sliderPost = null;
-        break;
-	}
+	$(".question").html(this.question);
+	$("#binary").show();
+	$('input[name="binarychoice"]').prop('checked', false);
+        $("input:radio[name=binarychoice]").click(function() {
+	    exp.responseValue = $(this).val();
+	});
 	exp.responseValue = null;
-    trialcounter++;
     },
 
     button : function() {
@@ -137,11 +139,12 @@ function make_slides(f) {
       exp.data_trials.push({
         "trial_type" : "single_generic_trial",
         "response" : exp.responseValue,
-    "question" : this.stim.question,
-    "tgrep id" : this.generic.Item_ID,
-	"noun" : this.generic.Noun, // Same instructions as above
-	"verb phrase" : this.generic.VP, // ""
-	"entire sentence" : this.generic.Sentence // ""
+        "question" : this.question,
+        "tgrep id" : this.generic.Item_ID,
+        "noun phrase" : this.generic.NP,
+        "verb phrase" : this.generic.VP,
+        "verb" : this.generic.Verb,
+        "entire sentence" : this.generic.Sentence
       });
     }
   });
@@ -183,7 +186,14 @@ function make_slides(f) {
 
 /// init ///
 function init() {
-  generate_random_questions(number_of_generic_trials);
+  generics = generate_stim(number_of_generic_trials, false);
+  ordering_flag = Math.floor(Math.random() * 2);
+  for (var i = generics.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var temp = generics[i];
+      generics[i] = generics[j];
+      generics[j] = temp;
+  }
   exp.trials = [];
   exp.catch_trials = [];
   exp.condition = _.sample(["CONDITION 1", "condition 2"]); //can randomize between subject conditions here

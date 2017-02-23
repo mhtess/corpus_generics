@@ -1,0 +1,8 @@
+#!/bin/bash
+# must be done in this order to extract disfluencies accurately.
+sed -e s/[*]ich[*]//g -i swbd.tab # change to file that you want to strip.
+sed -e s/[*]?[*]//g -i swbd.tab
+sed -e s/[*]t[*]//g -i swbd.tab
+sed -e s/-[0-9]//g -i swbd.tab
+sed -e s/0//g -i swbd.tab
+sed -e s/*//g -i swbd.tab
