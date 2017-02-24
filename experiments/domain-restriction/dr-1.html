@@ -63,10 +63,20 @@
     <p class="case" style="text-align: left;"></p>
     <p class="question"></p>
     <div id="textbox"><input type="text" id="textbox_response"></input></div>
-    <div id="binary">
+    <div id="binary_order1">
         <label><input type="radio"  name="binarychoice" value="General"/> General</label>
         <label><input type="radio"  name="binarychoice" value="Specific"/> Specific</label>
     </div>
+    <div id="binary_order2">
+        <label><input type="radio"  name="binarychoice" value="Specific"/> Specific</label>
+        <label><input type="radio"  name="binarychoice" value="General"/> General</label>
+    </div>
+    <div id="specify_box">
+        <p>What specific group or kind?</p>
+        <input type="text" id="text_response" value=""></input>
+        <p class="err" id="reprompt">Please write something.</p>
+    </div>
+
     <div id="rate">
         <p class="slider_number"></p>
         <table id="slider_table" class="slider_table">
