@@ -6,6 +6,6 @@
 @ OVDET   * << of | << /^PRP/ | << /DT/ | << /JJS/ | << /JJR/;
 @ DEONT * << must | << should | << ought;
 @ DISFL * << /UH/ | << /DFL/ | << /UNF/ | = /UH/ | = /DFL/ | = /UNF/;
-@ BAREPLURAL    (/NNS/ @>> (/NP/ = @OVDET | = @DISFL)) . (/VP/ < (VBP @< /VBG/ & @= (@DEONT)) @= (@DISFL)); 
+@ BAREPLURAL    (/NNS/ @>> (/NP/ = @OVDET | = @DISFL | << /^PRP/ | << /CC/)) . (/VP/ < /VBP/ & @<< /VBG/ & @<< /VBN/ & @= (@DEONT) & @= (@DISFL) & @<< /^PRP/) & @>> /^SBAR/ & @>> /SINV/ & @>> /SQ/; 
 @ LOOSEBAREPLURAL    (NNS @>> (/^NP/ < /^PRP/ | < DT)) . (VP < VBP);
 @ BPCONTEXT /^TOP/ << @BAREPLURAL;
