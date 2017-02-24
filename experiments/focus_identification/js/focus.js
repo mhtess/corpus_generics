@@ -47,26 +47,26 @@ function make_slides(f) {
 	if (focus_flag == 0) {
 	    this.question = "In the underlined statement, what question was the speaker addressing?";
 	    if (ordering_flag == 0) {
-		$('input[value="radio1"][name="binarychoice"]').val("NP Focus");
-		$('input[value="radio2"][name="binarychoice"]').val("VP Focus");
+		$('input[value="radio1"][name="binarychoice"]').val("NP");
+		$('input[value="radio2"][name="binarychoice"]').val("VP");
 		radio_button_text_1 = 'What qualities or actions are characteristic of <strong>[plural noun]</strong>?';
 		radio_button_text_2 = 'What entities or things <strong>[verb phrase]</strong>?';
 	    } else {
-		$('input[value="radio1"][name="binarychoice"]').val("VP Focus");
-                $('input[value="radio2"][name="binarychoice"]').val("NP Focus");
+		$('input[value="radio1"][name="binarychoice"]').val("VP");
+                $('input[value="radio2"][name="binarychoice"]').val("NP");
 		radio_button_text_1 = 'What entities or things <strong>[verb phrase]</strong>?';
 		radio_button_text_2 = 'What qualities or actions are characteristic of <strong>[plural noun]</strong>?';
 	    }
 	} else {
 	    this.question = "In the underlined statement, what do you think the speaker meant?";
 	    if (ordering_flag == 0) {
-		$('input[value="radio1"][name="binarychoice"]').val("NP Focus");
-                $('input[value="radio2"][name="binarychoice"]').val("VP Focus");
+		$('input[value="radio1"][name="binarychoice"]').val("NP");
+                $('input[value="radio2"][name="binarychoice"]').val("VP");
 		radio_button_text_1 = "that <strong>[plural noun]</strong> (as opposed to other entities or things) [verb phrase]";
 		radio_button_text_2 = "that [plural noun] <strong>[verb phrase]</strong> (as opposed to having other qualities or performing other actions)?";
 	    } else {
-		$('input[value="radio1"][name="binarychoice"]').val("VP Focus");
-                $('input[value="radio2"][name="binarychoice"]').val("NP Focus");
+		$('input[value="radio1"][name="binarychoice"]').val("VP");
+                $('input[value="radio2"][name="binarychoice"]').val("NP");
 		radio_button_text_1 = "that [plural noun] <strong>[verb phrase]</strong> (as opposed to having other qualities or performing other actions)?";
 		radio_button_text_2 = "that <strong>[plural noun]</strong> (as opposed to other entities or things) [verb phrase]";
 	    }
@@ -82,6 +82,7 @@ function make_slides(f) {
 	$('input[name="binarychoice"]').prop('checked', false);
         $("input:radio[name=binarychoice]").click(function() {
 	    exp.responseValue = $(this).val();
+	    exp.responseLabel = $(this).next('label:first').text()
 	});
 	exp.responseValue = null;
     },
@@ -138,13 +139,14 @@ function make_slides(f) {
     log_responses : function() {
       exp.data_trials.push({
         "trial_type" : "single_generic_trial",
-        "response" : exp.responseValue,
-        "question" : this.question,
-        "tgrep id" : this.generic.Item_ID,
-        "noun phrase" : this.generic.NP,
-        "verb phrase" : this.generic.VP,
-        "verb" : this.generic.Verb,
-        "entire sentence" : this.generic.Sentence
+        "response" : exp.responseLabel,
+	"question" : this.question,
+	"focus" : exp.responseValue,
+	"tgrep id" : this.generic.Item_ID,
+	"noun phrase" : this.generic.NP,
+	"verb phrase" : this.generic.VP,
+	"verb" : this.generic.Verb,
+	"entire sentence" : this.generic.Sentence
       });
     }
   });
