@@ -3,7 +3,8 @@ var trialcounter = 0;
 var binary_order;
 
 function make_slides(f) {
-  var   slides = {};
+  var slides = {};
+  var generics = generate_stim(number_of_generic_trials, true);
 
   slides.i0 = slide({
      name : "i0",
@@ -25,7 +26,7 @@ function make_slides(f) {
     /* trial information for this block
      (the variable 'stim' will change between each of these values,
       and for each of these, present_handle will be run.) */
-    present : random_questions,
+    present : generics,
     
     //this gets run only at the beginning of the block
     present_handle : function(stim) {
@@ -36,18 +37,19 @@ function make_slides(f) {
     $("#textbox").hide();
 	$("#rate").hide();
     this.stim = stim;
-    var generics = generate_stim(number_of_generic_trials, true);
-	generic = generics[trialcounter];
+	//generic = generics[trialcounter];
+    generic = stim;
     this.generic = generic;
 	var contexthtml = this.format_context(generic.Context);
     bare_plural = generic.NP + " " + generic.VP;
     usentence = generic.Sentence.replace(bare_plural, "<u>" + bare_plural + "</u>");
     $(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
-	var question = stim.question.replace("[plural noun]", generic.Noun); // Replace .Noun with the name of your noun column
-    question = stim.question.replace(/\[noun phrase\]/g, generic.NP);
+	//var question = questions.replace("[plural noun]", generic.Noun); // Replace .Noun with the name of your noun column
+    this.question = random_questions[trialcounter];
+    var question = this.question.question.replace(/\[noun phrase\]/g, generic.NP);
 	question = question.replace("[verb phrase]", generic.VP); // Replace .VP with the name of your verb column
 	$(".question").html(question);		
-	switch(stim.dependent_measure) {
+	switch(this.question.dependent_measure) {
 	case "textbox":
 	    $("#textbox_response").val("");
 	    $("#textbox").show();
@@ -150,7 +152,8 @@ function make_slides(f) {
       exp.data_trials.push({
         "trial_type" : "single_generic_trial",
         "response" : exp.responseValue,
-	"question" : this.stim.question,
+        "specific" : exp.specifyValue,
+	"question" : this.question.question,
     "order" : binary_order,
     "tgrep id" : this.generic.Item_ID,
 	"noun phrase" : this.generic.NP, // Same instructions as above
@@ -197,6 +200,7 @@ function make_slides(f) {
 
 /// init ///
 function init() {
+  generics = generate_stim(number_of_generic_trials, true);
   binary_order = Math.floor(Math.random() * 2) + 1;
   generate_random_questions(number_of_generic_trials);
   exp.trials = [];
