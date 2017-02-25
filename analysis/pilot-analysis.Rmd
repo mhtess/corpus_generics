@@ -1,0 +1,152 @@
+---
+title: "Pilots"
+output: html_notebook
+---
+
+
+```{r}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(langcog)
+library(ggplot2)
+library(ggthemes)
+library(forcats)
+library(knitr)
+theme_set(theme_few())
+
+data.path <- "../data/pilots/"
+
+readData <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-trials.csv", sep = "")))
+}
+
+readSubjectInfo <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-subject_information.csv", sep = "")))
+}
+```
+
+
+# Domain restriction pilot (n=9)
+
+Did people enjoy the experiment?
+
+```{r}
+df.info <- readSubjectInfo("pilot-dr-1")
+table(df.info$enjoyment)
+```
+Comments?
+
+```{r}
+df.info %>% select(comments) %>% filter(comments != "") %>% kable()
+```
+
+
+```{r}
+d.dr <- readData("pilot-dr-1")
+```
+
+
+
+```{r}
+dr.summary <- d.dr %>%
+  group_by(entire.sentence) %>%
+  mutate(response = ifelse(response == "Specific", 1, 0)) %>%
+  multi_boot_standard(column = "response")
+```
+
+```{r fig.width = 13}
+dr.summary %>%
+  mutate(entire.sentence = factor(entire.sentence, levels = entire.sentence[order(mean)])) %>% 
+  ggplot(., aes(x = entire.sentence, y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  coord_flip()+
+  ylab("Proportion Specific domain restriction")
+```
+
+```{r}
+dr.table <- left_join(d.dr, dr.summary) %>% filter(response == "Specific") %>%
+  select(entire.sentence, specific, mean)
+
+
+kable(dr.table[order(dr.table$entire.sentence),])
+```
+
+
+People vs. non-people?
+
+```{r}
+d.dr %>%
+  mutate(people = ifelse(noun.phrase == "people", "people", "nonpeople"),
+         response = ifelse(response == "Specific", 1, 0)) %>%
+  group_by(people) %>%
+  multi_boot_standard(column = "response") %>%
+  ggplot(., aes(x = people, y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  ylab("Proportion Specific domain restriction")
+```
+
+
+# Focus pilot (n=9)
+
+Did people enjoy the experiment?
+
+```{r}
+df.info <- readSubjectInfo("pilot-focus-1")
+table(df.info$enjoyment)
+```
+Comments?
+
+```{r}
+df.info %>% select(comments) %>% filter(comments != "") %>% kable()
+```
+
+
+```{r}
+d.focus <- readData("pilot-focus-1")
+```
+
+```{r fig.width = 13}
+d.focus.summary <- d.focus %>%
+  group_by(entire.sentence, noun.phrase) %>%
+  mutate(response = ifelse(focus == "NP", 1, 0)) %>%
+  multi_boot_standard(column = "response") %>%
+  ungroup() %>%
+  mutate(entire.sentence = factor(entire.sentence, levels = entire.sentence[order(mean)]))
+
+
+d.focus.summary %>%
+  ggplot(., aes(x = entire.sentence, y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  coord_flip()+
+  ylab("Proportion NP comparison class")
+```
+
+```{r eval = F}
+d.focus.summary %>%
+  group_by(noun.phrase) %>%
+  summarize(n = n()) %>%
+  kable()
+```
+
+People vs. non-people?
+
+```{r}
+d.focus %>%
+  mutate(people = ifelse(noun.phrase == "people", "people", "nonpeople")) %>%
+  group_by(people) %>%
+  mutate(response = ifelse(focus == "NP", 1, 0)) %>%
+  multi_boot_standard(column = "response") %>%
+  ggplot(., aes(x = people, y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  ylab("Proportion NP comparison class")
+```
+
