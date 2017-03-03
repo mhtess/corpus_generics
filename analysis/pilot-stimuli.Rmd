@@ -1,0 +1,31 @@
+---
+title: "Pilot stimuli"
+output: html_notebook
+---
+
+```{r libraries}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(data.table)
+```
+
+```{r loadDB}
+d <- data.table::fread("http://stanford.edu/~cfoster0/corpus_generics/generics_project/results/swbd.tab")
+```
+
+Stuff we've excluded
+
+```{r}
+exclude <- c("139091:13","97640:23","84527:24","28910:9","149611:20","171556:16","132445:9","13490:38","166108:36","175599:89","98639:28")
+```
+Let's get a random sample and see how we feel about it.
+
+
+```{r}
+d.pilot <- d %>%
+  filter(!(Item_ID %in% exclude)) %>%
+  sample_n(50)
+```
+
+

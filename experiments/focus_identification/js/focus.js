@@ -21,6 +21,37 @@ function make_slides(f) {
     }
   });
 
+ slides.focus_practice_trial = slide({
+    name: "focus_practice_trial",
+    start: function() {
+      $(".err").hide();
+      $(".display_condition").html("You are in " + exp.condition + ".");
+      $("input:radio[name=exchange1]").click(function() {
+            exp.exchangeOneValue = $(this).val();
+            exp.exchangeOneLabel = $(this).next('label:first').text()
+      });
+      $("input:radio[name=exchange2]").click(function() {
+            exp.exchangeTwoValue = $(this).val();
+            exp.exchangeTwoLabel = $(this).next('label:first').text()
+      });
+    },
+    button : function() {	
+      response = $("#text_response").val();
+      if (!exp.exchangeOneValue || !exp.exchangeTwoValue) {
+        $(".err").show();
+      } else {
+        exp.data_trials.push({
+          "trial_type" : "focus_practice_trial",
+	  "exchange_one_focus" : exp.exchangeOneValue,
+	  "exchange_one_label" : exp.exchangeOneLabel,
+	  "exchange_two_focus" : exp.exchangeTwoValue,
+          "exchange_two_label" : exp.exchangeTwoLabel
+        });
+        exp.go(); //make sure this is at the *end*, after you log your data
+      }
+    },
+  });
+
   slides.generic_trial_series = slide({
     name : "generic_trial_series",
 
@@ -208,7 +239,7 @@ function init() {
       screenUW: exp.width
     };
   //blocks of the experiment:
-  exp.structure=["i0", "instructions", "generic_trial_series", 'subj_info', 'thanks'];
+  exp.structure=["i0", "instructions", "focus_practice_trial", "generic_trial_series", 'subj_info', 'thanks'];
   
   exp.data_trials = [];
   //make corresponding slides:
