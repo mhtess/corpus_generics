@@ -24,34 +24,53 @@ function make_slides(f) {
     name: "dr_practice_trial",
     start: function() {
       $(".err").hide();
-      $("#correction").hide();
-      $("#specify_box_practice_trial").hide();
+      $("#correction1").hide();
+      $("#correction2").hide();
+      $("#specify_box_practice_trial1").hide();
+      $("#specify_box_practice_trial2").hide();
       $("input:radio[name=exchange1]").click(function() {
 	  $(".err").hide();
-            exp.responseValue = $(this).val();
-                if (exp.responseValue == "Specific") {
-                    $("#specify_box_practice_trial").show();
-		    $("#correction").hide();
+	  exp.exchangeOneValue = $(this).val();
+                if (exp.exchangeOneValue == "Specific") {
+                    $("#correction1").show();
                 } else {
-                    $("#specify_box_trial").hide();
-		    $("#correction").show();
+		    $("#correction1").hide();
+		}
+      });
+      $("input:radio[name=exchange2]").click(function() {
+          $(".err").hide();
+            exp.exchangeTwoValue = $(this).val();
+                if (exp.exchangeTwoValue == "Specific") {
+                    $("#specify_box_practice_trial2").show();
+                    $("#correction2").hide();
+                } else {
+                    $("#specify_box_practice_trial2").hide();
+                    $("#correction2").show();
                 }
-                $("#text_response_practice_trial").val("");
+                $("#text_response_practice_trial2").val("");
       });
     },
     button : function() {
-      exp.specifyValue = $("#text_response_practice_trial").val();
-      if (exp.responseValue  == null) {
+      exp.specifyValue1 = $("#text_response_practice_trial1").val();
+      exp.specifyValue2 = $("#text_response_practice_trial2").val();
+      if (!exp.exchangeOneValue || !exp.exchangeTwoValue) {
             $(".err").show();
-      } else if (exp.responseValue  == "General") {
-            $("#correction").show();
-      } else if (exp.specifyValue == "" && exp.responseValue == "Specific") {
-            $("#reprompt_practice_trial").show();
+      } else if (exp.exchangeOneValue  == "Specific") {
+            $("#correction1").show();
+      } else if (exp.exchangeTwoValue  == "General") {
+            $("#correction2").show();
+      } else if (exp.specifyValue2 == "" && exp.exchangeTwoValue == "Specific") {
+            $("#reprompt_practice_trial2").show();
       } else {
         exp.catch_trials.push({
           "trial_type" : "dr_np_practice_trial",
-	  "response" : exp.responseValue,
-          "specific" : exp.specifyValue,
+	  "response" : exp.exchangeOneValue,
+          "specific" : exp.specifyValue1,
+        });
+	exp.catch_trials.push({
+          "trial_type" : "dr_np_practice_trial",
+          "response" : exp.exchangeTwoValue,
+          "specific" : exp.specifyValue2,
         });
         exp.go(); //make sure this is at the *end*, after you log your data
       }

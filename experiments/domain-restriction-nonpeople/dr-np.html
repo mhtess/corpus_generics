@@ -58,25 +58,42 @@
     <button onclick="_s.button()">Continue</button>
   </div>
   
-  <div class="slide" id="dr_practice_trial">
+  <div class="slide" id="dr_practice_trial" style="font-size: 18px;">
     <p>Sometimes when people talk about things, they refer to them in one way, but mean something more limited. In this experiment, we are interested in what exactly the speaker means.</p>
-    <p>Consider the following exchange:</p>
+    <p>Consider the following exchanges:</p>
+    <strong>Exchange 1</strong>
+    <p class="case" style="text-align: left;">
+      <strong>Speaker #1:</strong> What's one way that people travel?<br>
+      <strong>Speaker #2:</strong> <u>People ride the subway.</u>
+    </p>
+    <p class="dr_practice_trial_question">In the underlined statement, is Speaker 2 talking about people in general or some specific group/kind of people?</p>
+     <div>
+        <label><input type="radio"  name="exchange1" value="General"/> General</label>
+        <label><input type="radio"  name="exchange1" value="Specific"/> Specific</label>
+    </div>
+     <div id="specify_box_practice_trial1">
+        <p>What specific group or kind?</p>
+        <input type="text" id="text_response_practice_trial1" value=""></input>
+        <p class="err" id="reprompt_practice_trial1">Please write something.</p>
+    </div>
+    <p id="correction1"><i>It appears that Speaker 2 is talking about people in general. Please select "General".</i></p>
+    <br><strong>Exchange 2</strong>
     <p class="case" style="text-align: left;">
       <strong>Speaker #1:</strong> How do people get to work?<br>
       <strong>Speaker #2:</strong> <u>People ride the subway.</u>
     </p> 
     <p class="dr_practice_trial_question">In the underlined statement, is Speaker 2 talking about people in general or some specific group/kind of people?</p>
      <div>
-        <label><input type="radio"  name="exchange1" value="General"/> General</label>
-        <label><input type="radio"  name="exchange1" value="Specific"/> Specific</label>
+        <label><input type="radio"  name="exchange2" value="General"/> General</label>
+        <label><input type="radio"  name="exchange2" value="Specific"/> Specific</label>
     </div>
-     <div id="specify_box_practice_trial">
+     <div id="specify_box_practice_trial2">
         <p>What specific group or kind?</p>
-	<input type="text" id="text_response_practice_trial" value=""></input>
-        <p class="err" id="reprompt_practice_trial">Please write something.</p>
+	<input type="text" id="text_response_practice_trial2" value=""></input>
+        <p class="err" id="reprompt_practice_trial2">Please write something.</p>
     </div>
-    <p id="correction"><i>It appears that Speaker 2 is talking about a specific group of people (namely, people who have jobs). Please select "Specific" and fill in the text box that appears.</i></p>
-    <p class="err">Please select an option.</p> <br>
+    <p id="correction2"><i>It appears that Speaker 2 is talking about a specific group of people (namely, people who have jobs). Please select "Specific" and fill in the text box that appears.</i></p>
+    <p class="err">Please fill in both options.</p> <br>
     <button onclick="_s.button()">Continue</button>
   </div>
 

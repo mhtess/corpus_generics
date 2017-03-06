@@ -42,10 +42,13 @@ function make_slides(f) {
       } else {
         exp.catch_trials.push({
           "trial_type" : "focus_practice_trial",
-	  "exchange_one_focus" : exp.exchangeOneValue,
-	  "exchange_one_label" : exp.exchangeOneLabel,
-	  "exchange_two_focus" : exp.exchangeTwoValue,
-          "exchange_two_label" : exp.exchangeTwoLabel
+	  "focus" : exp.exchangeOneValue,
+	  "response" : exp.exchangeOneLabel
+        });
+	exp.catch_trials.push({
+          "trial_type" : "focus_practice_trial",
+          "focus" : exp.exchangeTwoValue,
+          "response" : exp.exchangeTwoLabel
         });
         exp.go(); //make sure this is at the *end*, after you log your data
       }
