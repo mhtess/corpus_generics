@@ -66,7 +66,6 @@ function make_slides(f) {
       } else if (exp.specifyValue2 == "" && exp.responseValue2 == "People who ___") {
             $("#reprompt_trial2").show();
       } else {
-        console.log(exp.specifyValue2);
         exp.catch_trials.push({
           "trial_type" : "dr_np_practice_trial",
           "response" : exp.responseValue1,
