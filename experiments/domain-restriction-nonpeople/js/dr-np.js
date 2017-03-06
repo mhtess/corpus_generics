@@ -1,11 +1,10 @@
-var focus_flag = 1;
 var number_of_generic_trials = 30;
 var trialcounter = 0;
-var ordering_flag = 0;
-var generics = [];
+var binary_order;
 
 function make_slides(f) {
-  var   slides = {};
+  var slides = {};
+  var generics = generate_stim(number_of_generic_trials, true);
 
   slides.i0 = slide({
      name : "i0",
@@ -21,31 +20,38 @@ function make_slides(f) {
     }
   });
 
- slides.focus_practice_trial = slide({
-    name: "focus_practice_trial",
+  slides.dr_practice_trial = slide({
+    name: "dr_practice_trial",
     start: function() {
       $(".err").hide();
-      $(".display_condition").html("You are in " + exp.condition + ".");
+      $("#correction").hide();
+      $("#specify_box_practice_trial").hide();
       $("input:radio[name=exchange1]").click(function() {
-            exp.exchangeOneValue = $(this).val();
-            exp.exchangeOneLabel = $(this).next('label:first').text()
-      });
-      $("input:radio[name=exchange2]").click(function() {
-            exp.exchangeTwoValue = $(this).val();
-            exp.exchangeTwoLabel = $(this).next('label:first').text()
+	  $(".err").hide();
+            exp.responseValue = $(this).val();
+                if (exp.responseValue == "Specific") {
+                    $("#specify_box_practice_trial").show();
+		    $("#correction").hide();
+                } else {
+                    $("#specify_box_trial").hide();
+		    $("#correction").show();
+                }
+                $("#text_response_practice_trial").val("");
       });
     },
-    button : function() {	
-      response = $("#text_response").val();
-      if (!exp.exchangeOneValue || !exp.exchangeTwoValue) {
-        $(".err").show();
+    button : function() {
+      exp.specifyValue = $("#text_response_practice_trial").val();
+      if (exp.responseValue  == null) {
+            $(".err").show();
+      } else if (exp.responseValue  == "General") {
+            $("#correction").show();
+      } else if (exp.specifyValue == "" && exp.responseValue == "Specific") {
+            $("#reprompt_practice_trial").show();
       } else {
         exp.catch_trials.push({
-          "trial_type" : "focus_practice_trial",
-	  "exchange_one_focus" : exp.exchangeOneValue,
-	  "exchange_one_label" : exp.exchangeOneLabel,
-	  "exchange_two_focus" : exp.exchangeTwoValue,
-          "exchange_two_label" : exp.exchangeTwoLabel
+          "trial_type" : "dr_np_practice_trial",
+	  "response" : exp.responseValue,
+          "specific" : exp.specifyValue,
         });
         exp.go(); //make sure this is at the *end*, after you log your data
       }
@@ -63,65 +69,78 @@ function make_slides(f) {
     //this gets run only at the beginning of the block
     present_handle : function(stim) {
 	$(".err").hide();
-	$("#binary").hide();
-	$("#textbox").hide();
+	$("#binary_order1").hide();
+	$("#binary_order2").hide();
+    $("#specify_box").hide();
+    $("#textbox").hide();
 	$("#rate").hide();
-	this.generic = stim;
-	var generic = stim;
+    this.stim = stim;
+	//generic = generics[trialcounter];
+    generic = stim;
+    this.generic = generic;
 	var contexthtml = this.format_context(generic.Context);
-	bare_plural = generic.NP + " " + generic.VP;
-	usentence = generic.Sentence.replace(bare_plural, "<u>" + bare_plural + "</u>");
-	$(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
-	this.question;
-	var radio_button_text_1;
-	var radio_button_text_2;
-	if (focus_flag == 0) {
-	    this.question = "In the underlined statement, what question was the speaker addressing?";
-	    if (ordering_flag == 0) {
-		$('input[value="radio1"][name="binarychoice"]').val("NP");
-		$('input[value="radio2"][name="binarychoice"]').val("VP");
-		radio_button_text_1 = 'What qualities or actions are characteristic of <strong>[plural noun]</strong>?';
-		radio_button_text_2 = 'What entities or things <strong>[verb phrase]</strong>?';
-	    } else {
-		$('input[value="radio1"][name="binarychoice"]').val("VP");
-                $('input[value="radio2"][name="binarychoice"]').val("NP");
-		radio_button_text_1 = 'What entities or things <strong>[verb phrase]</strong>?';
-		radio_button_text_2 = 'What qualities or actions are characteristic of <strong>[plural noun]</strong>?';
-	    }
-	} else {
-	    this.question = "In the underlined statement, what do you think the speaker meant?";
-	    if (ordering_flag == 0) {
-		$('input[value="radio1"][name="binarychoice"]').val("NP");
-                $('input[value="radio2"][name="binarychoice"]').val("VP");
-		radio_button_text_1 = "that <strong>[plural noun]</strong> (as opposed to other entities or things) [verb phrase]";
-		radio_button_text_2 = "that [plural noun] <strong>[verb phrase]</strong> (as opposed to having other qualities or performing other actions)?";
-	    } else {
-		$('input[value="radio1"][name="binarychoice"]').val("VP");
-                $('input[value="radio2"][name="binarychoice"]').val("NP");
-		radio_button_text_1 = "that [plural noun] <strong>[verb phrase]</strong> (as opposed to having other qualities or performing other actions)?";
-		radio_button_text_2 = "that <strong>[plural noun]</strong> (as opposed to other entities or things) [verb phrase]";
-	    }
+    bare_plural = generic.NP + " " + generic.VP;
+    usentence = generic.Sentence.replace(bare_plural, "<u>" + bare_plural + "</u>");
+    $(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
+	//var question = questions.replace("[plural noun]", generic.Noun); // Replace .Noun with the name of your noun column
+    this.question = random_questions[trialcounter];
+    var question = this.question.question.replace(/\[noun phrase\]/g, generic.NP);
+	question = question.replace("[verb phrase]", generic.VP); // Replace .VP with the name of your verb column
+	$(".question").html(question);		
+	switch(this.question.dependent_measure) {
+	case "textbox":
+	    $("#textbox_response").val("");
+	    $("#textbox").show();
+	    $("#textbox_response").on('input', function() {
+		    exp.responseValue = $(this).val();
+	    });
+        break;
+	case "binary":
+        if (binary_order == 1) {
+	        $('input[name="binarychoice"]').prop('checked', false);
+	        $("#binary_order1").show();
+            $("input:radio[name=binarychoice]").click(function() {
+		        exp.responseValue = $(this).val();
+                if (exp.responseValue == "Specific") {
+                    $("#specify_box").show();
+                } else {
+                    $("#specify_box").hide();
+                }
+                $("#text_response").val("");
+	        });
+        } else {
+	        $('input[name="binarychoice"]').prop('checked', false);
+	        $("#binary_order2").show();
+            $("input:radio[name=binarychoice]").click(function() {
+                exp.responseValue = $(this).val();
+	            if (exp.responseValue == "Specific") {
+                    $("#specify_box").show();
+                } else {
+                    $("#specify_box").hide();
+                }
+                $("#text_response").val("");
+            });
+        }
+	    break;
+    default:
+        $("#rate").show();
+        this.init_numeric_sliders();
+        $(".slider_number").html("--");
+        exp.sliderPost = null;
+        break;
 	}
-	radio_button_text_1 = radio_button_text_1.replace("[plural noun]", generic.NP);
-	radio_button_text_2 = radio_button_text_2.replace("[plural noun]", generic.NP);
-	radio_button_text_1 = radio_button_text_1.replace("[verb phrase]", generic.VP);
-	radio_button_text_2 = radio_button_text_2.replace("[verb phrase]", generic.VP);
-	$('label[for=input1]').html(radio_button_text_1);
-	$('label[for=input2]').html(radio_button_text_2);
-	$(".question").html(this.question);
-	$("#binary").show();
-	$('input[name="binarychoice"]').prop('checked', false);
-        $("input:radio[name=binarychoice]").click(function() {
-	    exp.responseValue = $(this).val();
-	    exp.responseLabel = $(this).next('label:first').text()
-	});
 	exp.responseValue = null;
+    exp.specifyValue = null;
+    trialcounter++;
     },
 
     button : function() {
-	if (exp.responseValue  == null) {
+    exp.specifyValue = $("#text_response").val();
+    if (exp.responseValue  == null) {
             $(".err").show();
-	} else {
+	} else if (exp.specifyValue == "" && exp.responseValue == "Specific") {
+            $("#reprompt").show();
+    } else {
             this.log_responses();
         /* use _stream.apply(this); if and only if there is
         "present" data. (and only *after* responses are logged) */
@@ -170,14 +189,14 @@ function make_slides(f) {
     log_responses : function() {
       exp.data_trials.push({
         "trial_type" : "single_generic_trial",
-        "response" : exp.responseLabel,
-	"question" : this.question,
-	"focus" : exp.responseValue,
-	"tgrep id" : this.generic.Item_ID,
-	"noun phrase" : this.generic.NP,
-	"verb phrase" : this.generic.VP,
-	"verb" : this.generic.Verb,
-	"entire sentence" : this.generic.Sentence
+        "response" : exp.responseValue,
+        "specific" : exp.specifyValue,
+	"question" : this.question.question,
+    "order" : binary_order,
+    "tgrep id" : this.generic.Item_ID,
+	"noun phrase" : this.generic.NP, // Same instructions as above
+	"verb phrase" : this.generic.VP, // ""
+	"entire sentence" : this.generic.Sentence // ""
       });
     }
   });
@@ -219,14 +238,9 @@ function make_slides(f) {
 
 /// init ///
 function init() {
-  generics = generate_stim(number_of_generic_trials, false);
-  ordering_flag = Math.floor(Math.random() * 2);
-  for (var i = generics.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var temp = generics[i];
-      generics[i] = generics[j];
-      generics[j] = temp;
-  }
+  generics = generate_stim(number_of_generic_trials, true);
+  binary_order = Math.floor(Math.random() * 2) + 1;
+  generate_random_questions(number_of_generic_trials);
   exp.trials = [];
   exp.catch_trials = [];
   exp.condition = _.sample(["CONDITION 1", "condition 2"]); //can randomize between subject conditions here
@@ -239,7 +253,7 @@ function init() {
       screenUW: exp.width
     };
   //blocks of the experiment:
-  exp.structure=["i0", "instructions", "focus_practice_trial", "generic_trial_series", 'subj_info', 'thanks'];
+  exp.structure=["i0", "instructions", "dr_practice_trial", "generic_trial_series", 'subj_info', 'thanks'];
   
   exp.data_trials = [];
   //make corresponding slides:

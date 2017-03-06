@@ -1,0 +1,12 @@
+@ WORD          /^'{0,1}[a-zA-Z]+.*/;
+@ TERMINAL      * !< *;
+@ NP            /^NP/;
+@ VP            /^VP/;
+@ PP            /^PP/;
+@ OVDET * << of | << /^PRP/ | << /DT/ | << /JJS/ | << /JJR/;
+@ DEONT * << must | << should | << ought | << (have . to) | << (need . to);
+@ DISFL * << /UH/ | << /DFL/ | << /UNF/ | = /UH/ | = /DFL/ | = /UNF/;
+@ BAREPLURAL (/NNS/ @>> (/NP/ = @OVDET | = @DISFL)) . (/VP/ < (VBP @< /VBG/ & @= (@DEONT)) @= (@DISFL)); 
+@ XBAREPLURAL (/NNS/ @>> (/^NP/ = @OVDET)) . (/VP/ < (/VBP/ @< must @< should @< ought @< /VBG/)) >> (/^TOP/ @<< /^UH/); 
+@ LOOSEBAREPLURAL (NNS @>> (/^NP/ < /^PRP/ | < DT)) . (VP < VBP);
+@ BPCONTEXT /^TOP/ << @BAREPLURAL
