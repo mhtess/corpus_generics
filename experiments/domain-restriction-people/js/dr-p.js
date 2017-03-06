@@ -23,30 +23,28 @@ function make_slides(f) {
     name: "dr_practice_trial",
     start: function() {
       $(".err").hide();
-      $("#correction1").hide();
+      //$("#correction1").hide();
       $("#specify_box_trial1").hide();
-      $("#correction2").hide();
+      //$("#correction2").hide();
       $("#specify_box_trial2").hide();
 
       $("input:radio[name=exchange1]").click(function() {
             $(".err").hide();
             exp.responseValue1 = $(this).val();
-            if (exp.responseValue1 == "Humans in general") {
+            /*if (exp.responseValue1 == "Human beings") {
                 $("#correction1").hide();
             } else {
                 $("#correction1").show();
-            }
+            }*/
       });
       $("input:radio[name=exchange2]").click(function() {
             $(".err").hide();
             exp.responseValue2 = $(this).val();
-            if (exp.responseValue2 == "People who ___") {
-                $("#specify_box_trial2").show();
+            /*if (exp.responseValue2 == "People who") {
                 $("#correction2").hide();
             } else {
-                $("#specify_box_trial2").hide();
                 $("#correction2").show();
-            }
+            }*/
       });
       exp.specifyValue1 = null;
       exp.specifyValue2 = null;
@@ -57,13 +55,14 @@ function make_slides(f) {
       exp.specifyValue2 = $("#text_response_trial2").val();
       if (exp.responseValue1  == null || exp.responseValue2 == null) {
             $(".err").show();
-      } else if (exp.responseValue1 != "Humans in general") {
+      /*} else if (exp.responseValue1 != "Humans in general") {
             $("#correction1").show();
-      } else if (exp.responseValue2 != "People who ___") {
+      } else if (exp.responseValue2 != "People who") {
             $("#correction2").show();
-      } else if (exp.specifyValue1 == "" && exp.responseValue1 == "People who ___") {
+      */
+      } else if (exp.specifyValue1 == "" && exp.responseValue1 == "People who") {
             $("#reprompt_trial1").show();
-      } else if (exp.specifyValue2 == "" && exp.responseValue2 == "People who ___") {
+      } else if (exp.specifyValue2 == "" && exp.responseValue2 == "People who") {
             $("#reprompt_trial2").show();
       } else {
         exp.catch_trials.push({
@@ -93,22 +92,20 @@ function make_slides(f) {
     present_handle : function(stim) {
     $(".err").hide();
     $("#multi_order").hide();
-    $("#specify_box").hide();
     $("#textbox").hide();
     $("#rate").hide();
+    $('input[name="text_response"]').val('');
     this.stim = stim;
-    //generic = generics[trialcounter];
     generic = stim;
     this.generic = generic;
     var contexthtml = this.format_context(generic.Context);
     bare_plural = generic.NP + " " + generic.VP;
     usentence = generic.Sentence.replace(bare_plural, "<u>" + bare_plural + "</u>");
     $(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
-    //var question = questions.replace("[plural noun]", generic.Noun); // Replace .Noun with the name of your noun column
     this.question = random_questions[trialcounter];
     var question = this.question.question.replace(/\[noun phrase\]/g, generic.NP);
     question = question.replace("[verb phrase]", generic.VP); // Replace .VP with the name of your verb column
-    $(".question").html(question);      
+    $(".question").html(question);  
     switch(this.question.dependent_measure) {
     case "textbox":
         $("#textbox_response").val("");
@@ -122,12 +119,6 @@ function make_slides(f) {
         $("#multi_order").show();
         $("input:radio[name=multichoice]").click(function() {
             exp.responseValue = $(this).val();
-            if (exp.responseValue == "People who ___") {
-                $("#specify_box").show();
-            } else {
-                $("#specify_box").hide();
-            }
-            $("#text_response").val("");
         });
         break;
     default:
@@ -143,10 +134,10 @@ function make_slides(f) {
     },
 
     button : function() {
-    exp.specifyValue = $("#text_response").val();
+    exp.specifyValue = $('input[name="text_response"]').val();
     if (exp.responseValue  == null) {
             $(".err").show();
-    } else if (exp.specifyValue == "" && exp.responseValue == "Specific") {
+    } else if (exp.specifyValue == "" && exp.responseValue == "People who") {
             $("#reprompt").show();
     } else {
             this.log_responses();
