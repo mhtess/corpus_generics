@@ -35,7 +35,7 @@ function make_slides(f) {
             exp.exchangeTwoLabel = $(this).next('label:first').text()
       });
     },
-    button : function() {	
+    button : function() {
       response = $("#text_response").val();
       if (!exp.exchangeOneValue || !exp.exchangeTwoValue) {
         $(".err").show();
@@ -62,7 +62,7 @@ function make_slides(f) {
      (the variable 'stim' will change between each of these values,
       and for each of these, present_handle will be run.) */
     present : generics,
-    
+
     //this gets run only at the beginning of the block
     present_handle : function(stim) {
 	$(".err").hide();
@@ -222,6 +222,17 @@ function make_slides(f) {
 
 /// init ///
 function init() {
+
+  repeatWorker = false;
+  (function(){
+      var ut_id = "corpgen-focus-030617";
+      if (UTWorkerLimitReached(ut_id)) {
+        $('.slide').empty();
+        repeatWorker = true;
+        alert("You have already completed the maximum number of HITs allowed by this requester. Please click 'Return HIT' to avoid any impact on your approval rating.");
+      }
+  })();
+
   generics = generate_stim(number_of_generic_trials, false);
   ordering_flag = Math.floor(Math.random() * 2);
   for (var i = generics.length - 1; i > 0; i--) {
@@ -243,7 +254,7 @@ function init() {
     };
   //blocks of the experiment:
   exp.structure=["i0", "instructions", "focus_practice_trial", "generic_trial_series", 'subj_info', 'thanks'];
-  
+
   exp.data_trials = [];
   //make corresponding slides:
   exp.slides = make_slides(exp);
