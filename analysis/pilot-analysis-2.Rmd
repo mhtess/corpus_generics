@@ -1,0 +1,228 @@
+---
+title: "Pilots 2"
+output: html_notebook
+---
+
+
+```{r}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(langcog)
+library(ggplot2)
+library(ggthemes)
+library(forcats)
+library(knitr)
+theme_set(theme_few())
+
+data.path <- "../data/pilots/"
+
+readData <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-trials.csv", sep = "")))
+}
+
+readSubjectInfo <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-subject_information.csv", sep = "")))
+}
+```
+
+### Overview of Experiments:
+
+All experiments run 3/6/17
+
+1. Domain restriction - People NPs (n=18): Participants see conversation and are asked if the NP "people" is referring to "human beings", "Americans", "people in the area", or some other specific group of people. There is a practice trial where participants see an instance of "People in this area" and "People who have jobs"
+2. Domain restriction - Nonpeople NPs (n=18): Participants see conversation and are asked if the NP is referring to "NPs in general" or some "specific group/type of NP". There is a practice trial where participants see an instance of "people" referring to "human beings" and referring to "people who have jobs".
+3. Focus - Mixed people/non (n=18). Participants see conversation and are asked if the speaker meant NP (as opposed to other entities/things) VP, or NP VP (as opposed to doing other things / having other qualities). Participants saw a practice trial using "Birds lay eggs" under different direct questions ("What lay eggs?" vs. "How do birds reproduce?")
+
+
+# Domain restriction pilot: People NPs (n=18)
+
+Did people enjoy the experiment?
+
+```{r}
+df.info <- readSubjectInfo("pilot-dr-people-1")
+table(df.info$enjoyment)
+```
+Comments?
+
+```{r}
+df.info %>% select(comments) %>% filter(comments != "") %>% kable()
+```
+
+
+```{r}
+d.dr <- readData("pilot-dr-people-1")
+```
+
+
+#### Context-specific domain restriction? (i.e., "people who ___")
+
+```{r}
+dr.summary <- d.dr %>%
+  mutate(response = ifelse(response == "People who", 1, 0)) %>%
+   group_by(entire.sentence) %>% 
+    multi_boot_standard(column = "response")
+```
+
+```{r fig.width = 13}
+dr.summary %>%
+  mutate(entire.sentence = factor(entire.sentence, levels = entire.sentence[order(mean)])) %>% 
+  ggplot(., aes(x = entire.sentence, y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  coord_flip()+
+  ylab("Proportion Context-Specific domain restriction")+
+  ylim(0,1)+
+  geom_hline(yintercept = 0.5, lty = 3)
+```
+
+#### Items with greater than 0.25 "people who___" responses
+
+```{r}
+top.dr <- left_join(d.dr, dr.summary) %>% 
+  select(entire.sentence, specific, mean) %>%
+  filter(mean > 0.25, specific != "")
+
+top.dr[order(-top.dr$mean),] %>% kable()
+```
+
+
+```{r}
+dr.summary.responses <- d.dr %>%
+   group_by(entire.sentence, response) %>%
+   summarize(n = n())
+```
+
+
+### Distribution of responses
+
+```{r fig.width = 13}
+dr.summary.responses %>%
+  mutate(response = factor(response, levels = c("Humans in general", "Americans", "People in the area", "People who"),
+                            labels = c("Humans", "Americans", "Locals", "adhoc"))
+         ) %>% 
+  ggplot(., aes(x = response, y = n, fill = response))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  scale_fill_solarized()+
+  facet_wrap(~entire.sentence) + 
+  #coord_flip()+
+  ylab("Proportion Specific domain restriction")+
+  theme(axis.text.x = element_blank(),
+        strip.text = element_text(size = 8))
+```
+
+
+
+# Domain restriction pilot: Noneople NPs (n=18)
+
+Did people enjoy the experiment?
+
+```{r}
+df.info <- readSubjectInfo("pilot-dr-nonpeople-1")
+table(df.info$enjoyment)
+```
+Comments?
+
+```{r}
+df.info %>% select(comments) %>% filter(comments != "") %>% kable()
+```
+
+
+```{r}
+d.dr.nonpeople <- readData("pilot-dr-nonpeople-1")
+```
+
+
+
+```{r}
+dr.nonpeople.summary <- d.dr.nonpeople %>%
+   group_by(entire.sentence) %>%
+  mutate(response = ifelse(response == "Specific", 1, 0)) %>%
+  multi_boot_standard(column = "response")
+```
+
+```{r fig.width = 13}
+dr.nonpeople.summary %>%
+  mutate(entire.sentence = factor(entire.sentence, levels = entire.sentence[order(mean)])) %>% 
+  ggplot(., aes(x = entire.sentence, y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  coord_flip()+
+  ylab("Proportion Specific domain restriction")+
+  geom_hline(yintercept = 0.5, lty = 3)
+```
+
+```{r}
+dr.table <- left_join(d.dr.nonpeople, dr.nonpeople.summary) %>% filter(response == "Specific") %>%
+  select(entire.sentence, specific, mean) %>%
+  filter(mean > 0.25, specific != "")
+
+dr.table[order(-dr.table$mean),] %>% kable()
+
+```
+
+# Focus pilot (n=18)
+
+Did people enjoy the experiment?
+
+```{r}
+df.info <- readSubjectInfo("pilot-focus-2")
+table(df.info$enjoyment)
+```
+Comments?
+
+```{r}
+df.info %>% select(comments) %>% filter(comments != "") %>% kable()
+```
+
+
+```{r}
+d.focus <- readData("pilot-focus-2")
+```
+
+```{r fig.width = 13}
+d.focus.summary <- d.focus %>%
+  group_by(entire.sentence, noun.phrase) %>%
+  mutate(response = ifelse(focus == "NP", 1, 0)) %>%
+  multi_boot_standard(column = "response") %>%
+  ungroup() %>%
+  mutate(entire.sentence = factor(entire.sentence, levels = entire.sentence[order(mean)]))
+
+
+d.focus.summary %>%
+  ggplot(., aes(x = entire.sentence, y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  coord_flip()+
+  ylab("Proportion NP focus")+
+  ylim(0,1)+
+  geom_hline(yintercept = 0.5, lty = 3)
+```
+
+```{r eval = F}
+d.focus.summary %>%
+  group_by(noun.phrase) %>%
+  summarize(n = n()) %>%
+  kable()
+```
+
+People vs. non-people?
+
+```{r fig.width = 4}
+d.focus %>%
+  mutate(people = ifelse(noun.phrase == "people", "people", "nonpeople")) %>%
+  group_by(people) %>%
+  mutate(response = ifelse(focus == "NP", 1, 0)) %>%
+  multi_boot_standard(column = "response") %>%
+  ggplot(., aes(x = people, y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge(0.9), width = 0.9)+
+  geom_errorbar(position = position_dodge(0.9), width = 0.3)+
+  ylab("Proportion NP focus")+
+  ylim(0,1)+
+  geom_hline(yintercept = 0.5, lty = 3)
+```
+

@@ -54,7 +54,9 @@ d.dr <- readData("pilot-dr-1")
 
 ```{r}
 dr.summary <- d.dr %>%
-  group_by(entire.sentence) %>%
+   group_by(entire.sentence) %>%
+#   group_by(entire.sentence, response) %>%
+  # summarize(n = n())
   mutate(response = ifelse(response == "Specific", 1, 0)) %>%
   multi_boot_standard(column = "response")
 ```
