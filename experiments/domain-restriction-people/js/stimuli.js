@@ -1,5 +1,5 @@
 var path = '../../generics_project/results/';
-var fname = 'swbd.tab';
+var fname = 'sample_people.tab';
 
 function get_data(fullpath) {
     var response = $.ajax({
@@ -44,6 +44,6 @@ function generate_stim(n, rand) {
 			    return result;
 		    }, {});
 	    });
-  
+    
 	return stim;
 }
