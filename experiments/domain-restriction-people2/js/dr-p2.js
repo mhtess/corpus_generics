@@ -160,6 +160,8 @@ function make_slides(f) {
     }
 
     if (finished == true) {
+        $("#peoplewho_response").val("");
+        $("#peoplewhen_response").val("");
 
         if (exp.responseValue == "People who") {
             exp.specifyValue = exp.ph;
