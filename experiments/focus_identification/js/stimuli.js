@@ -1,5 +1,5 @@
 var path = '../../generics_project/results/';
-var fname = 'swbd.tab';
+var fname = 'sample30.tab';
 
 function get_data(fullpath) {
     var response = $.ajax({

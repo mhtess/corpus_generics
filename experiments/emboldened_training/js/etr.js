@@ -276,7 +276,7 @@ function init() {
       screenUW: exp.width
     };
   //blocks of the experiment:
-  exp.structure=["i0", "instructions", "example_round", "practice_trial_series", 'subj_info', 'thanks'];
+  exp.structure=["i0", "instructions", "practice_trial_series", 'subj_info', 'thanks'];
 
   exp.data_trials = [];
   //make corresponding slides:

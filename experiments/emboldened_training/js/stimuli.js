@@ -46,7 +46,7 @@ var generate_stim = function() {
         ["<br><b>Speaker #1</b>: What animal builds dams?  <br><b>Speaker #2</b>:",
         "Beavers build dams.",
         "Beavers",
-        "build dams..",
+        "build dams.",
         "build",
         "4"
         ],       
@@ -68,7 +68,7 @@ var generate_stim = function() {
         ],
 
 	["<br><b>Speaker #1</b>: What animal lays eggs? <br><b>Speaker #2</b>:",
-        "Birds lay eggs?.",
+        "Birds lay eggs?",
         "Birds",
         "lay eggs.",
         "lay",
@@ -126,7 +126,7 @@ var generate_stim = function() {
 	["<br><b>Speaker #1</b>: What do beavers do?  <br><b>Speaker #2</b>:",
         "Beavers build dams.",
         "Beavers",
-        "build dams..",
+        "build dams.",
         "build",
         "14"
         ],
@@ -148,7 +148,7 @@ var generate_stim = function() {
         ],       
         
         ["<br><b>Speaker #1</b>: How do birds reproduce? <br><b>Speaker #2</b>:",
-        "Birds lay eggs?.",
+        "Birds lay eggs?",
         "Birds",
         "lay eggs.",
         "lay",
