@@ -99,10 +99,6 @@ function make_slides(f) {
     
     //this gets run only at the beginning of the block
     present_handle : function(stim) {
-    if (exp.order == 1) {
-        var ordered = $("#multi_order"), items = ordered.children(), orderarr = [1,0];
-        ordered.append($.map(orderarr, function(v){ return items[v] }));
-    }
     $(".err").hide();
     $("#multi_order").hide();
     $("#textbox").hide();
@@ -273,6 +269,10 @@ function init() {
   generics = generate_stim(number_of_generic_trials, true);
   generate_random_questions(number_of_generic_trials);
   exp.order = Math.floor(Math.random() * 2);
+  if (exp.order == 1) {
+    var ordered = $("#multi_order"), items = ordered.children(), orderarr = [1,0];
+    ordered.append($.map(orderarr, function(v){ return items[v] }));
+  }
   exp.trials = [];
   exp.catch_trials = [];
   exp.condition = _.sample(["CONDITION 1", "condition 2"]); //can randomize between subject conditions here
