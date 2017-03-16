@@ -1,5 +1,5 @@
 var questions = [    
-    {question: "In the underlined statement, is the speaker talking about [noun phrase] in general or some specific group/kind of [noun phrase]?", dependent_measure: "multi"}
+    {question: "In the underlined statement, what group of people is the speaker talking about?", dependent_measure: "multi"}
 ]
 
 var random_questions = [];
