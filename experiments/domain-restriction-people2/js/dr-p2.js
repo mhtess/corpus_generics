@@ -217,6 +217,7 @@ function make_slides(f) {
     log_responses : function() {
       exp.data_trials.push({
         "trial_type" : "single_generic_trial",
+        "order:" : exp.order,
         "response" : exp.responseValue,
         "specific" : exp.specifyValue,
     "question" : this.question.question,
@@ -267,6 +268,11 @@ function make_slides(f) {
 function init() {
   generics = generate_stim(number_of_generic_trials, true);
   generate_random_questions(number_of_generic_trials);
+  exp.order = Math.floor(Math.random() * 2);
+  if (exp.order == 1) {
+    var ordered = $("#multi_order"), items = ordered.children(), orderarr = [1,0];
+    ordered.append($.map(orderarr, function(v){ return items[v] }));
+  }
   exp.trials = [];
   exp.catch_trials = [];
   exp.condition = _.sample(["CONDITION 1", "condition 2"]); //can randomize between subject conditions here
