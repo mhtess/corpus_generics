@@ -42,8 +42,7 @@ Both experiments run 3/20/17
 Did people enjoy the experiment?
 
 ```{r}
-df.info <- readSubjectInfo("pilot-dr-people-1")
-df.info <- read.csv("../mturk/pilot-dr-people-2/pilot-dr-people-2-subject_information.csv") 
+df.info <- readSubjectInfo("pilot-dr-people-2")
 table(df.info$enjoyment)
 ```
 Comments?
@@ -54,24 +53,26 @@ df.info %>% select(comments) %>% filter(comments != "") %>% kable()
 
 
 ```{r}
-d.dr <- readData("pilot-dr-people-1")
-d.dr <- read.csv("../mturk/pilot-dr-people-2/pilot-dr-people-2-trials.csv")
+d.dr <- readData("pilot-dr-people-2") %>%
+  rowwise() %>%
+  mutate(entire.sentence = gsub("&quotechar", "", entire.sentence),
+         people_who = ifelse(response == "People who", 1, 0)) 
 ```
 
 
 ```{r}
 d.dr.item.summary <- d.dr %>%
-  rowwise() %>%
-  mutate(entire.sentence = gsub("&quotechar", "", entire.sentence),
-         people_who = ifelse(response == "People who", 1, 0)) %>%
   group_by(entire.sentence) %>%
   multi_boot_standard(column = "people_who")
 ```
 
 ```{r fig.width = 13}
-d.dr.item.summary %>%
-  mutate(entire.sentence = factor(entire.sentence, levels = entire.sentence[order(mean)])) %>% 
-  ggplot(., aes(x = entire.sentence, y = mean, ymin = ci_lower, ymax = ci_upper))+
+d.dr.item.summary <- d.dr.item.summary %>%
+  mutate(entire.sentence = 
+           factor(entire.sentence, levels = entire.sentence[order(mean)]))
+
+
+ggplot(d.dr.item.summary, aes(x = entire.sentence, y = mean, ymin = ci_lower, ymax = ci_upper))+
   geom_bar(stat = 'identity', position = position_dodge())+
   geom_errorbar(position = position_dodge())+
   coord_flip()+
@@ -81,14 +82,55 @@ d.dr.item.summary %>%
 ```
 
 
+## Top "people who" responses
+
+```{r}
+top.dr <- left_join(d.dr, d.dr.item.summary) %>% 
+  select(entire.sentence, specific, mean, response) %>%
+  filter(mean > 0.75, response == "People who")
+
+top.dr[order(-top.dr$mean),] %>% kable()
+```
+
+### "People when" responses for top "People who" items
+
+```{r}
+top.dr.byWhen <- left_join(d.dr, d.dr.item.summary) %>% 
+  select(entire.sentence, specific, mean, response) %>%
+  filter(mean > 0.75, response == "People, when they")
+
+top.dr.byWhen[order(-top.dr.byWhen$mean),] %>% kable()
+```
+
+
+
+## Top "people when" responses
+
+```{r}
+top.dr.when <- left_join(d.dr, d.dr.item.summary) %>% 
+  select(entire.sentence, specific, mean, response) %>%
+  filter(mean <= 0.6, response == "People, when they")
+
+top.dr.when[order(top.dr.when$mean),] %>% kable()
+```
+
+### "People who" responses for top "People when" items
+
+```{r}
+top.dr.byWho <- left_join(d.dr, d.dr.item.summary) %>% 
+  select(entire.sentence, specific, mean, response) %>%
+  filter(mean <= 0.6, response == "People who")
+
+top.dr.byWho[order(top.dr.byWho$mean),] %>% kable()
+```
+
 
 # Focus Emboldened Training (n=20)
 
 Did people enjoy the experiment?
 
 ```{r}
-df.info <- readSubjectInfo("pilot-focus-2")
-df.info <- read.csv("../mturk/pilot-emboldened-training-1/pilot-emboldened-traning-1-subject_information.csv")
+df.info <- readSubjectInfo("pilot-emboldened-training-1")
 table(df.info$enjoyment)
 ```
 Comments?
@@ -99,8 +141,7 @@ df.info %>% select(comments) %>% filter(comments != "") %>% kable()
 
 
 ```{r}
-d.focus <- readData("pilot-focus-2")
-d.focus <- read.csv("../mturk/pilot-emboldened-training-1/pilot-emboldened-traning-1-trials.csv")
+d.focus <- readData("pilot-emboldened-training-1")
 ```
 
 
