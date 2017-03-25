@@ -46,15 +46,22 @@ function make_slides(f) {
 	usentence = generic.Sentence.replace(bare_plural, "<u>" + bare_plural + "</u>");
 	$(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
 	this.question = "In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.";
-	option_text_1 = "<strong>[plural noun]</strong> [verb phrase]";
-    option_text_2 = "[plural noun] <strong>[verb phrase]</strong>";
+	option_text_1 = "<span style='color:blue; font-size:18px'><strong>[plural noun]</strong></span> [verb phrase]";
+    option_text_2 = "[plural noun] <span style='color:blue; font-size:18px'><strong>[verb phrase]</strong></span>";
 	
     option_text_1 = option_text_1.replace("[plural noun]", generic.NP);
 	option_text_2 = option_text_2.replace("[plural noun]", generic.NP);
 	option_text_1 = option_text_1.replace("[verb phrase]", generic.VP);
 	option_text_2 = option_text_2.replace("[verb phrase]", generic.VP);
-	$('#left_bound').html(option_text_1);
-	$('#right_bound').html(option_text_2);
+  if (ordering_flag == 0) {
+	 $('#left_bound').html(option_text_1);
+	 $('#right_bound').html(option_text_2);
+    exp.rightSide = "VP";
+  } else {
+    $('#left_bound').html(option_text_2);
+   $('#right_bound').html(option_text_1);
+    exp.rightSide = "NP";
+  }
 	$(".question").html(this.question);
 	exp.responseValue = null;
     
@@ -65,7 +72,7 @@ function make_slides(f) {
     },
 
     button : function() {
-	if (exp.responseValue  == null) {
+	if (exp.sliderPost  == null) {
             $(".err").show();
 	} else {
             this.log_responses();
@@ -116,14 +123,14 @@ function make_slides(f) {
     log_responses : function() {
       exp.data_trials.push({
         "trial_type" : "single_generic_trial",
-        "response" : exp.responseLabel,
 	"question" : this.question,
 	"focus" : exp.responseValue,
 	"tgrep id" : this.generic.Item_ID,
 	"noun phrase" : this.generic.NP,
 	"verb phrase" : this.generic.VP,
 	"verb" : this.generic.Verb,
-	"entire sentence" : this.generic.Sentence
+	"entire sentence" : this.generic.Sentence,
+  "right_side" : exp.rightSide
       });
     }
   });
@@ -197,7 +204,7 @@ function init() {
       screenUW: exp.width
     };
   //blocks of the experiment:
-  exp.structure=["i0", "instructions", "example_round", "trial_series", 'subj_info', 'thanks'];
+  exp.structure=["i0", "instructions", "trial_series", 'subj_info', 'thanks'];
 
   exp.data_trials = [];
   //make corresponding slides:
