@@ -1,2 +1,6 @@
 *.nb.html
 .Rproj.user
+mturk/
+*swbd.tab*
+corpus_generics.Rproj
+*.Rhistory

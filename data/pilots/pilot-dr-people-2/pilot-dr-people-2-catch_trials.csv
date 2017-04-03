@@ -1,0 +1,31 @@
+workerid,specific,trial_type,response
+0,go to a baseball game,dr_np_practice_trial,"People, when they"
+0,have jobs,dr_np_practice_trial,People who
+1,go to a baseball game,dr_np_practice_trial,"People, when they"
+1,have jobs,dr_np_practice_trial,People who
+2,go to a baseball game.,dr_np_practice_trial,"People, when they"
+2,have jobs.,dr_np_practice_trial,People who
+3,go to a baseball game,dr_np_practice_trial,"People, when they"
+3,have jobs,dr_np_practice_trial,People who
+4,go to the baseball park.,dr_np_practice_trial,"People, when they"
+4,go to work.,dr_np_practice_trial,"People, when they"
+5,go to the baseball park,dr_np_practice_trial,People who
+5,go to work,dr_np_practice_trial,People who
+6,go to a baseball game.,dr_np_practice_trial,"People, when they"
+6,have jobs.,dr_np_practice_trial,People who
+7,go to a baseball game,dr_np_practice_trial,"People, when they"
+7,have jobs,dr_np_practice_trial,People who
+8,go to a baseball game,dr_np_practice_trial,"People, when they"
+8,have jobs,dr_np_practice_trial,People who
+9,go to a baseball game.,dr_np_practice_trial,"People, when they"
+9,have jobs.,dr_np_practice_trial,People who
+10,go to baseball games,dr_np_practice_trial,People who
+10,go to work,dr_np_practice_trial,"People, when they"
+11,"go to the baseball park, ride the subway.",dr_np_practice_trial,People who
+11,have jobs ride the subway,dr_np_practice_trial,People who
+12,go to a baseball game,dr_np_practice_trial,"People, when they"
+12,have jobs,dr_np_practice_trial,People who
+13,go to the baseball game,dr_np_practice_trial,"People, when they"
+13,go to work,dr_np_practice_trial,People who
+14,go to a baseball game.,dr_np_practice_trial,"People, when they"
+14,have jobs,dr_np_practice_trial,People who

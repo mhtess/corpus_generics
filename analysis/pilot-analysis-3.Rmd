@@ -1,0 +1,174 @@
+---
+title: "Pilots 3 (3/20/2017)"
+output: html_notebook
+---
+
+```{r}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(langcog)
+library(ggplot2)
+library(ggthemes)
+library(forcats)
+library(knitr)
+theme_set(theme_few())
+
+data.path <- "../data/pilots/"
+
+readData <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-trials.csv", sep = "")))
+}
+
+readSubjectInfo <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-subject_information.csv", sep = "")))
+}
+```
+
+### Overview of Experiments:
+
+Both experiments run 3/20/17
+
+1. Domain restriction 2 - People NPs (n=15): Participants see conversation and are asked if the NP "people" is referring to "people who ___" or "people when ___". Aim is to see if the domain restriction is on the category or on the event (and if it varies by the type of predicate).
+2. Focus - Emboldened training (n=20). Noncorpus / true experimental study. Participants are familiarized with the idea of *focus* (instantiated as bold, blue text), and are tested on it with generic statements under direct questions ("What lay eggs?" vs. "How do birds reproduce?"). The goal is to see if the bold, blue text can be used as a valid measurement for focus.
+
+# Domain restriction 2: People NPs (n=15)
+
+
+Did people enjoy the experiment?
+
+```{r}
+df.info <- readSubjectInfo("pilot-dr-people-2")
+table(df.info$enjoyment)
+```
+Comments?
+
+```{r}
+df.info %>% select(comments) %>% filter(comments != "") %>% kable()
+```
+
+
+```{r}
+d.dr <- readData("pilot-dr-people-2") %>%
+  rowwise() %>%
+  mutate(entire.sentence = gsub("&quotechar", "", entire.sentence),
+         people_who = ifelse(response == "People who", 1, 0)) 
+```
+
+
+```{r}
+d.dr.item.summary <- d.dr %>%
+  group_by(entire.sentence) %>%
+  multi_boot_standard(column = "people_who")
+```
+
+```{r fig.width = 13}
+d.dr.item.summary <- d.dr.item.summary %>%
+  mutate(entire.sentence = 
+           factor(entire.sentence, levels = entire.sentence[order(mean)]))
+
+
+ggplot(d.dr.item.summary, aes(x = entire.sentence, y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  coord_flip()+
+  ylab("Proportion 'People who' restriction")+
+  ylim(0,1)+
+  geom_hline(yintercept = 0.5, lty = 3)
+```
+
+
+## Top "people who" responses
+
+```{r}
+top.dr <- left_join(d.dr, d.dr.item.summary) %>% 
+  select(entire.sentence, specific, mean, response) %>%
+  filter(mean > 0.75, response == "People who")
+
+top.dr[order(-top.dr$mean),] %>% kable()
+```
+
+### "People when" responses for top "People who" items
+
+```{r}
+top.dr.byWhen <- left_join(d.dr, d.dr.item.summary) %>% 
+  select(entire.sentence, specific, mean, response) %>%
+  filter(mean > 0.75, response == "People, when they")
+
+top.dr.byWhen[order(-top.dr.byWhen$mean),] %>% kable()
+```
+
+
+
+## Top "people when" responses
+
+```{r}
+top.dr.when <- left_join(d.dr, d.dr.item.summary) %>% 
+  select(entire.sentence, specific, mean, response) %>%
+  filter(mean <= 0.6, response == "People, when they")
+
+top.dr.when[order(top.dr.when$mean),] %>% kable()
+```
+
+### "People who" responses for top "People when" items
+
+```{r}
+top.dr.byWho <- left_join(d.dr, d.dr.item.summary) %>% 
+  select(entire.sentence, specific, mean, response) %>%
+  filter(mean <= 0.6, response == "People who")
+
+top.dr.byWho[order(top.dr.byWho$mean),] %>% kable()
+```
+
+
+# Focus Emboldened Training (n=20)
+
+Did people enjoy the experiment?
+
+```{r}
+df.info <- readSubjectInfo("pilot-emboldened-training-1")
+table(df.info$enjoyment)
+```
+Comments?
+
+```{r}
+df.info %>% select(comments) %>% filter(comments != "") %>% kable()
+```
+
+
+```{r}
+d.focus <- readData("pilot-emboldened-training-1")
+```
+
+
+Preprocess data
+
+```{r}
+d.focus <- d.focus %>%
+  rowwise() %>%
+  mutate(NP_response = ifelse(right_side == "NP", focus, 1-focus),
+         correct_response = ifelse(correct == "NP",  NP_response, 1 - NP_response),
+         context = gsub("<br><b>Speaker #1</b>: ", "", context),
+         context = gsub(" <br><b>Speaker #2</b>:", "", context)) %>%
+  ungroup()
+```
+
+```{r}
+d.focus.stat.item <- d.focus %>%
+  group_by(entire.sentence, context, correct) %>%
+  multi_boot_standard(column = "correct_response")
+```
+
+```{r}
+ggplot(d.focus.stat.item, aes( x = entire.sentence, y = mean, ymin = ci_lower, ymax = ci_upper, fill = correct))+
+  geom_bar(stat = 'identity', position = position_dodge(), alpha = 0.5, color = 'black')+
+  geom_errorbar(position = position_dodge())+
+  #theme(axis.text.x = element_text(angle = 90))+
+  coord_flip()
+```
+
+

@@ -45,10 +45,18 @@ function make_slides(f) {
 	bare_plural = generic.NP + " " + generic.VP;
 	usentence = generic.Sentence.replace(bare_plural, "<u>" + bare_plural + "</u>");
 	$(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
-	this.question = "In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.";
-	option_text_1 = "<strong>[plural noun]</strong> [verb phrase]\t";
-    option_text_2 = "\t[plural noun] <strong>[verb phrase]</strong>";
+	this.question = "In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the part in <span style='color:blue; font-size:20px'><strong>blue</strong></span>.";
 	
+	if (exp.order == 0) {
+	    option_text_1 = "\t[plural noun] <span style='color:blue; font-size:19px'><strong>[verb phrase]</strong></span>";
+	    option_text_2 = "<span style='color:blue; font-size:19px'><strong>[plural noun]</strong></span> [verb phrase]\t";
+	    exp.rightSide = "NP";
+	} else {
+	    option_text_1 = "<span style='color:blue; font-size:19px'><strong>[plural noun]</strong></span> [verb phrase]\t";
+	    option_text_2 = "\t[plural noun] <span style='color:blue; font-size:19px'><strong>[verb phrase]</strong></span>";
+	    exp.rightSide = "VP";
+	}
+
     option_text_1 = option_text_1.replace("[plural noun]", generic.NP);
 	option_text_2 = option_text_2.replace("[plural noun]", generic.NP);
 	option_text_1 = option_text_1.replace("[verb phrase]", generic.VP);
@@ -65,7 +73,7 @@ function make_slides(f) {
     },
 
     button : function() {
-	if (exp.responseValue  == null) {
+	if (exp.sliderPost  == null) {
             $(".err").show();
 	} else {
             this.log_responses();
@@ -102,7 +110,10 @@ function make_slides(f) {
 	"noun phrase" : this.generic.NP,
 	"verb phrase" : this.generic.VP,
 	"verb" : this.generic.Verb,
-	"entire sentence" : this.generic.Sentence
+	"entire sentence" : this.generic.Sentence,
+	"correct" : this.generic.Correct,
+	"right_side" : exp.rightSide,
+	"context" : this.generic.Context
       });
     }
   });
@@ -264,6 +275,7 @@ function init() {
       generics[i] = generics[j];
       generics[j] = temp;
   }
+  exp.order = Math.floor(Math.random() * 2);
   exp.trials = [];
   exp.catch_trials = [];
   exp.condition = _.sample(["CONDITION 1", "condition 2"]); //can randomize between subject conditions here
