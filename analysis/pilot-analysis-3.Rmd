@@ -36,6 +36,11 @@ Both experiments run 3/20/17
 1. Domain restriction 2 - People NPs (n=15): Participants see conversation and are asked if the NP "people" is referring to "people who ___" or "people when ___". Aim is to see if the domain restriction is on the category or on the event (and if it varies by the type of predicate).
 2. Focus - Emboldened training (n=20). Noncorpus / true experimental study. Participants are familiarized with the idea of *focus* (instantiated as bold, blue text), and are tested on it with generic statements under direct questions ("What lay eggs?" vs. "How do birds reproduce?"). The goal is to see if the bold, blue text can be used as a valid measurement for focus.
 
+
+Follow-up run on 4/4/17
+
+3. Focus - Emboldened test ( n = 9 ). Corpus version of (2).
+
 # Domain restriction 2: People NPs (n=15)
 
 
@@ -87,19 +92,9 @@ ggplot(d.dr.item.summary, aes(x = entire.sentence, y = mean, ymin = ci_lower, ym
 ```{r}
 top.dr <- left_join(d.dr, d.dr.item.summary) %>% 
   select(entire.sentence, specific, mean, response) %>%
-  filter(mean > 0.75, response == "People who")
+  filter(mean > 0.75)
 
-top.dr[order(-top.dr$mean),] %>% kable()
-```
-
-### "People when" responses for top "People who" items
-
-```{r}
-top.dr.byWhen <- left_join(d.dr, d.dr.item.summary) %>% 
-  select(entire.sentence, specific, mean, response) %>%
-  filter(mean > 0.75, response == "People, when they")
-
-top.dr.byWhen[order(-top.dr.byWhen$mean),] %>% kable()
+top.dr[with(top.dr, order(-mean, entire.sentence, response)),] %>% kable()
 ```
 
 
@@ -109,20 +104,26 @@ top.dr.byWhen[order(-top.dr.byWhen$mean),] %>% kable()
 ```{r}
 top.dr.when <- left_join(d.dr, d.dr.item.summary) %>% 
   select(entire.sentence, specific, mean, response) %>%
-  filter(mean <= 0.6, response == "People, when they")
+  filter(mean <= 0.6)
 
-top.dr.when[order(top.dr.when$mean),] %>% kable()
+top.dr.when[with(top.dr.when, order(mean, entire.sentence, response)),] %>% kable()
 ```
 
-### "People who" responses for top "People when" items
+## Intermediate responses
+
+Will we see double domain restriction?
 
 ```{r}
-top.dr.byWho <- left_join(d.dr, d.dr.item.summary) %>% 
+intermediate.dr.when <- left_join(d.dr, d.dr.item.summary) %>% 
   select(entire.sentence, specific, mean, response) %>%
-  filter(mean <= 0.6, response == "People who")
+  filter(mean > 0.6, mean < 0.75)
 
-top.dr.byWho[order(top.dr.byWho$mean),] %>% kable()
+
+intermediate.dr.when[with(intermediate.dr.when, order(mean, entire.sentence, response)),] %>% kable()
+
 ```
+
+
 
 
 # Focus Emboldened Training (n=20)
@@ -172,3 +173,99 @@ ggplot(d.focus.stat.item, aes( x = entire.sentence, y = mean, ymin = ci_lower, y
 ```
 
 
+
+# Focus Emboldened Test (n=9)
+
+
+Notes
+- should record "correct" answer for catch trials
+- should record "context" for corpus items
+
+Did people enjoy the experiment?
+
+```{r}
+df.info <- readSubjectInfo("pilot-emboldened-focus-1")
+table(df.info$enjoyment)
+```
+Comments?
+
+```{r}
+df.info %>% select(comments) %>% filter(comments != "") %>% kable()
+```
+
+
+```{r}
+d.focus <- readData("pilot-emboldened-focus-1")
+```
+
+
+Catch / warm up trials
+
+```{r}
+d.focus.catch <- read.csv(paste(data.path, "pilot-emboldened-focus-1", "/", "pilot-emboldened-focus-1", "-catch_trials.csv", sep = ""))
+
+correct.responses <- data.frame(
+  entire.sentence = c("Ticks carry Lyme disease.", "Beavers build dams."),
+  correct = c("VP", "NP")
+)
+
+d.focus.correct <- left_join(d.focus.catch, correct.responses) %>%
+  rowwise() %>%
+  mutate(NP_response = ifelse(right_side == "NP", focus, 1-focus),
+         correct_response = ifelse(correct == "NP",  NP_response, 1 - NP_response))
+
+
+
+d.good.workers <- d.focus.correct %>%
+  select(workerid, entire.sentence, correct_response) %>%
+  spread(entire.sentence, correct_response) %>%
+  group_by(workerid) %>%
+  filter( (`Beavers build dams.` > 0.5) && (`Ticks carry Lyme disease.` > 0.5))
+
+d.focus.correct %>%
+  select(workerid, entire.sentence, correct_response) %>%
+  spread(entire.sentence, correct_response) %>% kable()
+```
+
+
+
+Preprocess data
+
+```{r}
+d.focus.passed <- d.focus %>%
+  filter(workerid %in% d.good.workers$workerid) %>%
+  rowwise() %>%
+  mutate(NP_response = ifelse(right_side == "NP", focus, 1-focus),
+         entire.sentence = gsub("&quotechar","", entire.sentence)) %>%
+  ungroup() %>%
+  mutate(workerid = factor(workerid))
+```
+
+```{r fig.width = 16, fig.height = 8}
+ggplot(d.focus.passed, aes( x = workerid, y = NP_response, fill = workerid))+
+  geom_bar(stat = 'identity', position = position_dodge(), color = 'black')+
+  facet_wrap(~entire.sentence)+
+  scale_fill_solarized()+
+  geom_hline(yintercept = 0.5, lty = 3)
+```
+
+
+All subjects
+
+```{r}
+d.focus.all <- d.focus %>%
+  mutate(pass = workerid %in% d.good.workers$workerid) %>%
+  rowwise() %>%
+  mutate(NP_response = ifelse(right_side == "NP", focus, 1-focus),
+         entire.sentence = gsub("&quotechar","", entire.sentence)) %>%
+  ungroup() %>%
+  mutate(workerid = factor(workerid))
+```
+
+```{r fig.width = 16, fig.height = 8}
+ggplot(d.focus.all, aes( x = pass, y = NP_response, fill = workerid))+
+  geom_bar(stat = 'identity', position = position_dodge(), color = 'black')+
+  facet_wrap(~entire.sentence)+
+  scale_fill_solarized()+
+  geom_hline(yintercept = 0.5, lty = 3)
+```
