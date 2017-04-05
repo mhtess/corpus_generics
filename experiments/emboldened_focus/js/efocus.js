@@ -41,7 +41,7 @@ function make_slides(f) {
 	this.question = "In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.";
 	option_text_1 = "<span style='color:blue; font-size:18px'><strong>[plural noun]</strong></span> [verb phrase]";
     option_text_2 = "[plural noun] <span style='color:blue; font-size:18px'><strong>[verb phrase]</strong></span>";
-	
+
     option_text_1 = option_text_1.replace("[plural noun]", generic.NP);
 	option_text_2 = option_text_2.replace("[plural noun]", generic.NP);
 	option_text_1 = option_text_1.replace("[verb phrase]", generic.VP);
@@ -57,7 +57,7 @@ function make_slides(f) {
   }
 	$(".question").html(this.question);
 	exp.responseValue = null;
-    
+
     this.init_numeric_sliders();
     $(".slider_number").hide();
     //$(".slider_number").html("--");
@@ -151,7 +151,7 @@ function make_slides(f) {
 	this.question = "In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.";
 	option_text_1 = "<span style='color:blue; font-size:18px'><strong>[plural noun]</strong></span> [verb phrase]";
     option_text_2 = "[plural noun] <span style='color:blue; font-size:18px'><strong>[verb phrase]</strong></span>";
-	
+
     option_text_1 = option_text_1.replace("[plural noun]", generic.NP);
 	option_text_2 = option_text_2.replace("[plural noun]", generic.NP);
 	option_text_1 = option_text_1.replace("[verb phrase]", generic.VP);
@@ -167,7 +167,7 @@ function make_slides(f) {
   }
 	$(".question").html(this.question);
 	exp.responseValue = null;
-    
+
     this.init_numeric_sliders();
     $(".slider_number").hide();
     //$(".slider_number").html("--");
@@ -280,7 +280,7 @@ function init() {
 
   repeatWorker = false;
   (function(){
-      var ut_id = "corpgen-focus-030617";
+      var ut_id = "corpgen-focus-040517";
       if (UTWorkerLimitReached(ut_id)) {
         $('.slide').empty();
         repeatWorker = true;
