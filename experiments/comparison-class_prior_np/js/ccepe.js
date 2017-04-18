@@ -12,8 +12,8 @@ function make_slides(f) {
   slides.instructions = slide({
     name : "instructions",
     start: function() {
-     $(".n_entities").html(exp.n_entities);
-     $(".n_items").html(exp.n_trials);
+     //$(".n_entities").html(exp.n_entities);
+     //$(".n_items").html(exp.n_trials);
    },
     button : function() {
       exp.go(); //use exp.go() if and only if there is no "present" data.
@@ -31,10 +31,13 @@ function make_slides(f) {
       var generic = stim;
       this.generic = generic;
 	  var contexthtml = this.format_context(generic.Context);
-	  bare_plural = generic.NP + " " + generic.VP;
-	  usentence = generic.Sentence.replace(bare_plural, "<u>" + bare_plural + "</u>");
-	  $(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
-      $(".comparison_class").html(generic.CCN);
+	  //bare_plural = generic.NP + " " + generic.VP;
+	  //usentence = generic.Sentence.replace(bare_plural, "<u>" + bare_plural + "</u>");
+	  usentence = generic.Sentence.replace(generic.NP, "<u>" + generic.NP + "</u>");
+      $(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
+      $(".NP").html(generic.NP.charAt(0).toUpperCase() + generic.NP.slice(1));
+      $(".comparison_class_singular").html(generic.CCNS);
+      $(".comparison_class_plural").html(generic.CCNP);
 
       $(".n_entities").html(exp.n_entities);
 
@@ -87,7 +90,7 @@ function make_slides(f) {
   "e1" : exp.names[0],
   "e2" : exp.names[1],
   "e3" : exp.names[2],
-  "e4" : exp.names[3],
+  //"e4" : exp.names[3],
       });
     },
 
@@ -162,7 +165,7 @@ function make_slides(f) {
       $("#tableGenerator").html('<table id="tableGenerator"> </table>');
 
       $(".prompt").html(
-        "For each of the following things, how many <strong>" + this.stim.VP + "</strong>?<br><br>"
+        "For each of the following, how many <strong>" + this.stim.VP + "</strong>?<br><br>"
       );
 
 
@@ -310,7 +313,7 @@ function init() {
       }
   })();*/
 
-  exp.n_entities = 4;
+  exp.n_entities = 3;
   exp.names = [];
   exp.all_names = []; 
   exp.trials = [];
@@ -338,6 +341,7 @@ function init() {
   //blocks of the experiment:
   exp.structure=[
     "i0",
+    "instructions",
     "generateEntities",
     "priors",
     "subj_info",

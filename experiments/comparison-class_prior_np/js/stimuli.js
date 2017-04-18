@@ -1,6 +1,6 @@
 //var path = 'https://web.stanford.edu/~chakia/CoCoLab/corpus_generics/generics_project/results/';
 var path = 'https://web.stanford.edu/~cfoster0/corpus_generics/generics_project/results/';
-var fname = 'sample30_plus.tab';
+var fname = 'sample19_plus.tab';
 
 function get_data(fullpath) {
     var response = $.ajax({
