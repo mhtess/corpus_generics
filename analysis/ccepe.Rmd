@@ -68,3 +68,16 @@ ggsave("~/Desktop/ccepe.pdf", width = 12, height = 6)
 ```
 
 
+
+
+```{r}
+df.elicited <- df.pe %>% 
+  mutate(NP = tolower(NP)) %>%
+  group_by(VP, NP) %>%
+  summarize(n = n())
+
+df.elicited[with(df.elicited, order(VP, -n, NP)), ] %>% kable()
+```
+
+
+
