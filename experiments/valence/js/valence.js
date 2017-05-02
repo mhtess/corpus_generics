@@ -31,29 +31,24 @@ function make_slides(f) {
     //this gets run only at the beginning of the block
     present_handle : function(stim) {
 	$(".err").hide();
+    $("#practice_wrong_answer").hide();
 	this.generic = stim;
 	var generic = stim;
 	var contexthtml = this.format_context(generic.Context);
 	usentence = generic.Sentence.replace(generic.VP, "<u>" + generic.VP + "</u>");
 	$(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
-	this.question = "There is something about [noun phrase] that causes them to have the underlined property.";
-    option_text_1 = "Strongly Disagree";
-    option_text_2 = "Strongly Agree";
-
-    this.question = this.question.replace("[noun phrase]", generic.NP);
-
-    //option_text_1 = option_text_1.replace("[plural noun]", generic.NP);
-	//option_text_2 = option_text_2.replace("[plural noun]", generic.NP);
-	//option_text_1 = option_text_1.replace("[verb phrase]", generic.VP);
-	//option_text_2 = option_text_2.replace("[verb phrase]", generic.VP);
-  if (ordering_flag == 0) {
-	 $('#training_left_bound').html(option_text_1);
-	 $('#training_right_bound').html(option_text_2);
-    exp.rightSide = "VP";
+	this.question = "From very bad to very good, how good is it to have the underlined property?";
+    option_text_1 = "<b>Very Bad</b>";
+    option_text_2 = "<b>Very Good</b>";
+    
+    if (ordering_flag == 0) {
+	 $('#practice_left_bound').html(option_text_1);
+	 $('#practice_right_bound').html(option_text_2);
+    exp.rightSide = "P";
   } else {
-    $('#training_left_bound').html(option_text_2);
-   $('#training_right_bound').html(option_text_1);
-    exp.rightSide = "NP";
+    $('#practice_left_bound').html(option_text_2);
+   $('#practice_right_bound').html(option_text_1);
+    exp.rightSide = "N";
   }
 	$(".question").html(this.question);
 	exp.responseValue = null;
@@ -62,12 +57,16 @@ function make_slides(f) {
     $(".slider_number").hide();
     //$(".slider_number").html("--");
     exp.sliderPost = null;
+
     },
 
     button : function() {
+    $(".err").hide();
 	if (exp.sliderPost  == null) {
             $(".err").show();
-	} else {
+	} else if (((exp.sliderPost <= 0.5) && (this.generic.Correct == "P")) || ((exp.sliderPost >= 0.5) && (this.generic.Correct == "N"))) {
+            $("#practice_wrong_answer").show();
+    } else {
             this.log_responses();
         /* use _stream.apply(this); if and only if there is
         "present" data. (and only *after* responses are logged) */
@@ -76,13 +75,13 @@ function make_slides(f) {
     },
 
     init_sliders : function() {
-      utils.make_slider("#training_single_slider", function(event, ui) {
+      utils.make_slider("#practice_single_slider", function(event, ui) {
         exp.responseValue = ui.value;
       });
     },
 
     init_numeric_sliders : function() {
-        utils.make_slider("#training_single_slider", this.make_slider_callback());
+        utils.make_slider("#practice_single_slider", this.make_slider_callback());
     },
 
     make_slider_callback : function() {
@@ -145,18 +144,6 @@ function make_slides(f) {
 	this.generic = stim;
 	var generic = stim;
 	var contexthtml = this.format_context(generic.Context);
-	/*bare_plural = generic.NP + " " + generic.VP;
-	usentence = generic.Sentence.replace(bare_plural, "<u>" + bare_plural + "</u>");
-	$(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
-	this.question = "In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.";
-	option_text_1 = "<span style='color:blue; font-size:18px'><strong>[plural noun]</strong></span> [verb phrase]";
-    option_text_2 = "[plural noun] <span style='color:blue; font-size:18px'><strong>[verb phrase]</strong></span>";
-
-    option_text_1 = option_text_1.replace("[plural noun]", generic.NP);
-	option_text_2 = option_text_2.replace("[plural noun]", generic.NP);
-	option_text_1 = option_text_1.replace("[verb phrase]", generic.VP);
-	option_text_2 = option_text_2.replace("[verb phrase]", generic.VP);*/
-  
 	usentence = generic.Sentence.replace(generic.VP, "<u>" + generic.VP + "</u>");
 	$(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
 	this.question = "From very bad to very good, how good is it to have the underlined property?";
@@ -295,7 +282,7 @@ function init() {
       }
   })();
 
-  training_generics = generate_training_stim(4);
+  training_generics = generate_training_stim(2);
   generics = generate_stim(number_of_generic_trials, false);
   //ordering_flag = Math.floor(Math.random() * 2);
   ordering_flag = 0;
@@ -317,7 +304,7 @@ function init() {
       screenUW: exp.width
     };
   //blocks of the experiment:
-  exp.structure=["i0", "instructions", "trial_series", 'subj_info', 'thanks'];
+  exp.structure=["i0", "instructions", "example_series", "trial_series", 'subj_info', 'thanks'];
 
   exp.data_trials = [];
   //make corresponding slides:

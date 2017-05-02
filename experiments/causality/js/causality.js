@@ -20,7 +20,116 @@ function make_slides(f) {
     }
   });
 
- 
+  slides.example_series = slide({
+    name : "example_series",
+
+    /* trial information for this block
+     (the variable 'stim' will change between each of these values,
+      and for each of these, present_handle will be run.) */
+    present : training_generics,
+
+    //this gets run only at the beginning of the block
+    present_handle : function(stim) {
+	$(".err").hide();
+    $("#practice_wrong_answer").hide();
+	this.generic = stim;
+	var generic = stim;
+	var contexthtml = this.format_context(generic.Context);
+	usentence = generic.Sentence.replace(generic.VP, "<u>" + generic.VP + "</u>");
+	$(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
+ 	this.question = "Assess the following statement: There is something about <b>[noun phrase]</b> that causes them to have the underlined property.";
+    option_text_1 = "<b>Strongly Disagree</b>";
+    option_text_2 = "<b>Strongly Agree</b>";
+
+    this.question = this.question.replace("[noun phrase]", generic.NP);  
+
+    if (ordering_flag == 0) {
+	 $('#practice_left_bound').html(option_text_1);
+	 $('#practice_right_bound').html(option_text_2);
+    exp.rightSide = "C";
+    } else {
+    $('#practice_left_bound').html(option_text_2);
+   $('#practice_right_bound').html(option_text_1);
+    exp.rightSide = "I";
+    }
+	$(".question").html(this.question);
+	exp.responseValue = null;
+
+    this.init_numeric_sliders();
+    $(".slider_number").hide();
+    //$(".slider_number").html("--");
+    exp.sliderPost = null;
+
+    },
+
+    button : function() {
+    $(".err").hide();
+	if (exp.sliderPost  == null) {
+            $(".err").show();
+	} else if (((exp.sliderPost <= 0.5) && (this.generic.Correct == "C")) || ((exp.sliderPost >= 0.5) && (this.generic.Correct == "I"))) {
+            $("#practice_wrong_answer").show();
+    } else {
+            this.log_responses();
+        /* use _stream.apply(this); if and only if there is
+        "present" data. (and only *after* responses are logged) */
+            _stream.apply(this);
+    }
+    },
+    
+    init_sliders : function() {
+      utils.make_slider("#practice_single_slider", function(event, ui) {
+        exp.responseValue = ui.value;
+      });
+    },
+
+    init_numeric_sliders : function() {
+        utils.make_slider("#practice_single_slider", this.make_slider_callback());
+    },
+
+    make_slider_callback : function() {
+      return function(event, ui) {
+        exp.sliderPost = ui.value;
+        exp.responseValue = ui.value;
+        $(".slider_number").html(Math.round(exp.sliderPost*100) + "%");
+      };
+    },
+
+    format_context : function(context) {
+        contexthtml = context.replace(/###speakera(\d+)./g, "<br><b>Speaker #1:</b>");
+        contexthtml = contexthtml.replace(/###speakerb(\d+)./g, "<br><b>Speaker #2:</b>");
+        contexthtml = contexthtml.replace(/###/g, " ");
+        if (!contexthtml.startsWith("<br><b>Speaker #")) {
+            var ssi = contexthtml.indexOf("Speaker #");
+            switch(contexthtml[ssi+"Speaker #".length]) {
+            case "1":
+                contexthtml = "<br><b>Speaker #2:</b> " + contexthtml;
+                break;
+            case "2":
+                contexthtml = "<br><b>Speaker #1:</b> " + contexthtml;
+                break;
+            default:
+                break;
+            }
+        };
+        return contexthtml;
+    },
+
+    log_responses : function() {
+      exp.catch_trials.push({
+        "trial_type" : "single_causality_catch",
+	"question" : this.question,
+	"focus" : exp.responseValue,
+	"tgrep id" : this.generic.Item_ID,
+	"noun phrase" : this.generic.NP,
+	"verb phrase" : this.generic.VP,
+	"verb" : this.generic.Verb,
+	"entire sentence" : this.generic.Sentence,
+    "context" : this.generic.Context,
+    "correct" : this.generic.Correct,
+      })
+    },
+  });
+
   slides.trial_series = slide({
     name : "trial_series",
 
@@ -113,7 +222,7 @@ function make_slides(f) {
 
     log_responses : function() {
       exp.data_trials.push({
-        "trial_type" : "single_generic_trial",
+        "trial_type" : "single_causality_trial",
 	"question" : this.question,
 	"agreement" : exp.responseValue,
 	"tgrep id" : this.generic.Item_ID,
@@ -176,7 +285,7 @@ function init() {
       }
   })();
 
-  training_generics = generate_training_stim(4);
+  training_generics = generate_training_stim(2);
   generics = generate_stim(number_of_generic_trials, false);
   //ordering_flag = Math.floor(Math.random() * 2);
   ordering_flag = 0;
@@ -198,7 +307,7 @@ function init() {
       screenUW: exp.width
     };
   //blocks of the experiment:
-  exp.structure=["i0", "instructions", "trial_series", 'subj_info', 'thanks'];
+  exp.structure=["i0", "instructions", "example_series", "trial_series", 'subj_info', 'thanks'];
 
   exp.data_trials = [];
   //make corresponding slides:

@@ -70,41 +70,23 @@ function generate_training_stim(n) {
     }
     
     examples = [
-        ["<br><b>Speaker #1</b>: What animal builds dams?  <br><b>Speaker #2</b>:",
-        "Beavers build dams.",
-        "Beavers",
-        "build dams.",
-        "build",
-        "4",
-	    "NP"
+        ["<br><b>Speaker #1</b>: Our 3-month old is pretty quiet. She doesn't say much yet.  <br><b>Speaker #2</b>:",
+        "Well, babies usually just babble.",
+        "babies",
+        "usually just babble.",
+        "babble",
+        "1",
+	    "C"
         ],  
 
-	    ["<br><b>Speaker #1</b>: What disease do ticks carry? <br><b>Speaker #2</b>:",
-        "Ticks carry Lyme disease.",
-        "Ticks",
-        "carry Lyme disease.",
-        "carry",
-        "11",
-        "VP"
+	    ["<br><b>Speaker #1</b>: You didn't get my card? <br><b>Speaker #2</b>:",
+        "No, but packages get lost in the mail.",
+        "packages",
+        "get lost in the mail.",
+        "get",
+        "2",
+        "I"
         ],
-
-        ["<br><b>Speaker #1</b>: What animal has beautiful feathers? <br><b>Speaker #2</b>:",
-        "Peacocks have beautiful feathers.",
-        "Peacocks",
-        "have beautiful feathers.",
-        "have",
-        "3",
-	    "NP"
-        ],
-
-        ["<br><b>Speaker #1</b>: What color are swans? <br><b>Speaker #2</b>:",
-        "Swans are white.",
-        "Swans",
-        "are white.",
-        "are",
-        "18",
-	    "VP"
-        ],    
     ]
     training_examples = [];
     var ntex = examples.length;
