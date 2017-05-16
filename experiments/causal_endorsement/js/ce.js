@@ -31,25 +31,21 @@ function make_slides(f) {
     //this gets run only at the beginning of the block
     present_handle : function(stim) {
 	$(".err").hide();
-    $("#practice_rate").hide();
-    $("#practice_wrong_answer").hide();
     $(".causal").hide();
-    $(".c_question").hide();
 
     this.generic = stim;
 	var generic = stim;
 	var contexthtml = this.format_context(generic.Context);
     usentence = generic.Sentence.replace(generic.NP + " " + generic.VP, '<font color="blue">' + generic.NP + " " + generic.VP + '</font>');
 	usentence = usentence.replace(generic.VP, "<u>" + generic.VP + "</u>");
-    //usentence = usentence.replace(usentence, '<font color="blue">' + usentence + '</font>');
 	$(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
     
     if (ordering_flag == 0) {
-        $("#binary_order1").show();
-        $("#binary_order2").hide();
+        $("#practice_binary_order1").show();
+        $("#practice_binary_order2").hide();
     } else {
-        $("#binary_order2").show();
-        $("#binary_order1").hide();
+        $("#practice_binary_order2").show();
+        $("#practice_binary_order1").hide();
     }
 
     var e_question = "Do you agree with the statement in blue?"
@@ -101,9 +97,9 @@ function make_slides(f) {
     button : function() {
     $(".err").hide();
     if (exp.binary_choice == null) {
-            $("#no_choice").show();        
+            $("#practice_no_choice").show();        
     } else if (exp.sliderPost  == null) {
-            $("#no_position").show();
+            $("#practice_no_position").show();
 	} else if (((exp.sliderPost <= 0.5) && (this.generic.Correct == "C")) || ((exp.sliderPost >= 0.5) && (this.generic.Correct == "I"))) {
             $("#practice_wrong_answer").show();
     } else {
@@ -156,7 +152,8 @@ function make_slides(f) {
       exp.catch_trials.push({
         "trial_type" : "single_causality_catch",
 	"question" : this.question,
-	"focus" : exp.responseValue,
+    "choice" : exp.binary_choice,
+	"agreement" : exp.responseValue,
 	"tgrep id" : this.generic.Item_ID,
 	"noun phrase" : this.generic.NP,
 	"verb phrase" : this.generic.VP,
@@ -179,28 +176,59 @@ function make_slides(f) {
     //this gets run only at the beginning of the block
     present_handle : function(stim) {
 	$(".err").hide();
+    $(".causal").hide();
 	this.generic = stim;
 	var generic = stim;
 	var contexthtml = this.format_context(generic.Context);
-	usentence = generic.Sentence.replace(generic.VP, "<u>" + generic.VP + "</u>");
+    usentence = generic.Sentence.replace(generic.NP + " " + generic.VP, '<font color="blue">' + generic.NP + " " + generic.VP + '</font>');
+	usentence = usentence.replace(generic.VP, "<u>" + generic.VP + "</u>");
 	$(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
-	this.question = "Assess the following statement: There is something about <b>[noun phrase]</b> that causes them to have the underlined property.";
-    option_text_1 = "<b>Strongly Disagree</b>";
-    option_text_2 = "<b>Strongly Agree</b>";
-
-    this.question = this.question.replace("[noun phrase]", generic.NP);
-
     
     if (ordering_flag == 0) {
-	 $('#left_bound').html(option_text_1);
-	 $('#right_bound').html(option_text_2);
-    exp.rightSide = "VP";
-  } else {
-    $('#left_bound').html(option_text_2);
-   $('#right_bound').html(option_text_1);
-    exp.rightSide = "NP";
-  }
-	$(".question").html(this.question);
+        $("#binary_order1").show();
+        $("#binary_order2").hide();
+    } else {
+        $("#binary_order2").show();
+        $("#binary_order1").hide();
+    }
+
+    var e_question = "Do you agree with the statement in blue?"
+    $(".e_question").html(e_question);
+
+    exp.binary_choice = null;
+    
+    $("input:radio[name=binarychoice]").attr('checked', false);
+    $("input:radio[name=binarychoice]").click(function() {
+	    $(".err").hide();
+        $(".causal").show();
+        $(".c_question").show();
+        exp.binary_choice = $(this).val();
+
+ 	    if (exp.binary_choice == "Yes") {
+            var c_question = "Assess the following statement: There is something about <b>[noun phrase]</b> that causes them to have the underlined property.";
+        } else if (exp.binary_choice == "No") {
+            var c_question = "Assess the following statement: The speaker believes that there is something about <b>[noun phrase]</b> that causes them to have the underlined property.";
+        } 
+        option_text_1 = "<b>Strongly Disagree</b>";
+        option_text_2 = "<b>Strongly Agree</b>";
+
+        c_question = c_question.replace("[noun phrase]", generic.NP);  
+
+
+        if (ordering_flag == 0) {
+            $('#left_bound').html(option_text_1);
+	        $('#right_bound').html(option_text_2);
+            exp.rightSide = "C";
+        } else {
+            $('#left_bound').html(option_text_2);
+            $('#right_bound').html(option_text_1);
+            exp.rightSide = "I";
+        }
+	
+        $(".c_question").html(c_question);
+        $("#rate").show()
+    });
+
 	exp.responseValue = null;
 
     this.init_numeric_sliders();
@@ -210,9 +238,11 @@ function make_slides(f) {
     },
 
     button : function() {
-	if (exp.sliderPost  == null) {
-            $(".err").show();
-	} else {
+    if (exp.binary_choice == null) {
+            $("#no_choice").show();        
+    } else if (exp.sliderPost  == null) {
+            $("#no_position").show();
+    } else {
             this.log_responses();
         /* use _stream.apply(this); if and only if there is
         "present" data. (and only *after* responses are logged) */
@@ -262,6 +292,7 @@ function make_slides(f) {
       exp.data_trials.push({
         "trial_type" : "single_causality_trial",
 	"question" : this.question,
+    "choice" : exp.binary_choice,
 	"agreement" : exp.responseValue,
 	"tgrep id" : this.generic.Item_ID,
 	"noun phrase" : this.generic.NP,
@@ -345,6 +376,7 @@ function init() {
       screenUW: exp.width
     };
   //blocks of the experiment:
+  //exp.structure=["i0", "instructions", "trial_series", 'subj_info', 'thanks'];
   exp.structure=["i0", "instructions", "example_series", "trial_series", 'subj_info', 'thanks'];
 
   exp.data_trials = [];

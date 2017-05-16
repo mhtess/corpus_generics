@@ -63,15 +63,15 @@
     <p>Read the following conversation snippet:</p>
     <p class="case" style="text-align: left;"></p>
     <p class="e_question"></p>
-    <div id="binary_order1">
+    <div id="practice_binary_order1">
         <label><input type="radio"  name="binarychoice" value="Yes"/> Yes</label>
         <label><input type="radio"  name="binarychoice" value="No"/> No</label>
     </div>
-    <div id="binary_order2">
+    <div id="practice_binary_order2">
         <label><input type="radio"  name="binarychoice" value="No"/> No</label>
         <label><input type="radio"  name="binarychoice" value="Yes"/> Yes</label>
     </div>
-    <div id="causal">
+    <div class="causal">
         <p class="c_question"></p>
         <div id="practice_rate">
             <p class="slider_number"></p>
@@ -82,8 +82,8 @@
     </div>
     <br>
     <button onclick="_s.button()">Continue</button>
-    <div class="err" id="no_choice"><br>Please select a response.</div>
-    <div class="err" id="no_position"><br>Please select a position for the slider.</div>
+    <div class="err" id="practice_no_choice"><br>Please select a response.</div>
+    <div class="err" id="practice_no_position"><br>Please select a position for the slider.</div>
     <div class="err" id="practice_wrong_answer"><br>That answer is incorrect. Re-read the sentence and reconsider the relationship between the property and the category.</div>
   </div>
 
@@ -92,16 +92,28 @@
    <div class="slide" id="trial_series">
     <p>Read the following conversation snippet:</p>
     <p class="case" style="text-align: left;"></p>
-    <p class="question"></p>
-    <div id="rate">
-        <p class="slider_number"></p>
-        <table id="slider_table" class="slider_table">
-            <tr><td class="left" id="left_bound" valign="middle" style="text-align:center"></td><td colspan="2"><div id="single_slider" class="slider"></div></td><td class="right" id="right_bound" valign="middle" style="text-align:center"></td></tr>
-        </table>
+    <p class="e_question"></p>
+    <div id="_binary_order1">
+        <label><input type="radio"  name="binarychoice" value="Yes"/> Yes</label>
+        <label><input type="radio"  name="binarychoice" value="No"/> No</label>
+    </div>
+    <div id="binary_order2">
+        <label><input type="radio"  name="binarychoice" value="No"/> No</label>
+        <label><input type="radio"  name="binarychoice" value="Yes"/> Yes</label>
+    </div>
+    <div class="causal">
+        <p class="c_question"></p>
+        <div id="rate">
+            <p class="slider_number"></p>
+            <table id="slider_table" class="slider_table">
+                <tr><td class="left" id="left_bound" valign="middle" style="text-align:center"></td><td colspan="2"><div id="single_slider" class="slider"></div></td><td class="right" id="right_bound" valign="middle" style="text-align:center"></td></tr>
+            </table>
+        </div>
     </div>
     <br>
     <button onclick="_s.button()">Continue</button>
-    <div class="err">Please select a position for the slider.</div>
+    <div class="err" id="no_choice"><br>Please select a response.</div>
+    <div class="err" id="no_position"><br>Please select a position for the slider.</div> 
   </div>
 
   <div class="slide"  id="subj_info">
