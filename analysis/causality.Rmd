@@ -1,0 +1,186 @@
+---
+title: "Causality experiments"
+output: html_notebook
+---
+
+
+```{r}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(langcog)
+library(ggplot2)
+library(ggthemes)
+library(forcats)
+library(knitr)
+theme_set(theme_few())
+
+data.path <- "../data/pilots/"
+
+readData <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-trials.csv", sep = "")))
+}
+
+readSubjectInfo <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-subject_information.csv", sep = "")))
+}
+```
+
+### Overview of Experiments:
+
+
+1. Valence 1 (5/2/2017): Participants rate on a scale from "very bad" to "very good" how good it is to have the underlined property.
+2. Valence 2 (5/23/2017): WSJ
+
+
+### Subject information
+
+
+Did people enjoy the experiment?
+
+```{r}
+df.info <- readSubjectInfo("pilot-causality-1")
+table(df.info$enjoyment)
+```
+Comments?
+
+```{r}
+df.info %>% select(comments) %>% filter(comments != "") %>% kable()
+```
+
+
+
+```{r}
+df.cas <- readData("pilot-causality-1")  %>%
+  mutate(verb.phrase = gsub("&quotechar", "", verb.phrase),
+         entire.sentence = gsub("&quotechar", "", entire.sentence))
+```
+
+```{r}
+df.cas.summary <- df.cas %>%
+  group_by(entire.sentence, verb.phrase) %>%
+  multi_boot_standard(column = "agreement")
+```
+
+```{r fig.width=10}
+df.cas.summary <- df.cas.summary %>%
+  ungroup() %>%
+  mutate(entire.sentence = 
+           factor(entire.sentence, levels = entire.sentence[order(mean)]))
+
+
+ggplot(df.cas.summary, aes(x = entire.sentence, 
+                           y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  coord_flip()+
+  ylab("Causality judgment (1 = agree; 0 = disagree)")+
+  ylim(0,1)+
+  geom_hline(yintercept = 0.5, lty = 3)
+```
+
+
+Full distributions
+
+By item
+
+```{r fig.width=12}
+df.val %>%
+  ggplot(., aes( x = agreement))+
+  #geom_density()+
+  geom_histogram()+
+  facet_wrap(~entire.sentence)
+```
+
+By subject
+
+```{r fig.width=12}
+df.val %>%
+  ggplot(., aes( x = agreement))+
+  geom_histogram()+
+  facet_wrap(~workerid)
+```
+
+
+# Valence 2
+
+### Subject information
+
+
+Did people enjoy the experiment?
+
+```{r}
+df2.info <- readSubjectInfo("pilot-causality-2")
+table(df2.info$enjoyment)
+```
+Comments?
+
+```{r}
+df2.info %>% select(comments) %>% filter(comments != "") %>% kable()
+```
+
+
+
+```{r}
+df2.cas <- readData("pilot-causality-2")  %>%
+  mutate(verb.phrase = gsub("&quotechar", "", verb.phrase),
+         entire.sentence = gsub("&quotechar", "", entire.sentence))
+```
+
+Endorsements
+
+```{r fig.width=10}
+df.cas2.endorse.summary <- df2.cas %>%
+  rowwise() %>%
+  mutate(response = ifelse(choice == "Yes", 1, 0)) %>%
+  group_by(entire.sentence, verb.phrase) %>%
+  multi_boot_standard(column = "response")
+
+df.cas2.endorse.summary <- df.cas2.endorse.summary %>%
+  ungroup() %>%
+  mutate(entire.sentence = 
+           factor(entire.sentence, levels = entire.sentence[order(mean)]))
+
+
+df.cas2.endorse.summary[with(df.cas2.endorse.summary, order(-mean)),] %>% kable()
+# ggplot(df.cas2.endorse.summary, aes(x = entire.sentence, 
+#                            y = mean, ymin = ci_lower, ymax = ci_upper))+
+#   geom_bar(stat = 'identity', position = position_dodge())+
+#   geom_errorbar(position = position_dodge())+
+#   coord_flip()+
+#   ylab("Endorsement")+
+#   ylim(0,1)+
+#   geom_hline(yintercept = 0.5, lty = 3)
+```
+
+
+
+```{r}
+df.cas2.summary <- df2.cas %>%
+  group_by(entire.sentence, verb.phrase) %>%
+  multi_boot_standard(column = "agreement")
+```
+
+```{r fig.width=10}
+df.cas2.summary <- df.cas2.summary %>%
+  ungroup() %>%
+  mutate(entire.sentence = 
+           factor(entire.sentence, levels = entire.sentence[order(mean)]))
+
+ggplot(df.cas2.summary, aes(x = entire.sentence, 
+                           y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  coord_flip()+
+  ylab("Causality judgment (1 = agree; 0 = disagree)")+
+  ylim(0,1)+
+  geom_hline(yintercept = 0.5, lty = 3)
+
+df.cas2.summary[with(df.cas2.summary, order(-mean)),] %>% kable()
+```
+
+
