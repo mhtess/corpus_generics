@@ -89,7 +89,7 @@ Full distributions
 By item
 
 ```{r fig.width=12}
-df.val %>%
+df.cas %>%
   ggplot(., aes( x = agreement))+
   #geom_density()+
   geom_histogram()+
@@ -99,7 +99,7 @@ df.val %>%
 By subject
 
 ```{r fig.width=12}
-df.val %>%
+df.cas %>%
   ggplot(., aes( x = agreement))+
   geom_histogram()+
   facet_wrap(~workerid)
@@ -131,47 +131,56 @@ df2.cas <- readData("pilot-causality-2")  %>%
          entire.sentence = gsub("&quotechar", "", entire.sentence))
 ```
 
-Endorsements
+### Table of items
+
+```{r}
+unique(df2.cas %>% select(tgrep.id, entire.sentence, verb.phrase)) %>%
+  kable()
+```
+
+
+
+### Endorsements
 
 ```{r fig.width=10}
 df.cas2.endorse.summary <- df2.cas %>%
   rowwise() %>%
   mutate(response = ifelse(choice == "Yes", 1, 0)) %>%
-  group_by(entire.sentence, verb.phrase) %>%
+  group_by(entire.sentence, verb.phrase, tgrep.id) %>%
   multi_boot_standard(column = "response")
 
 df.cas2.endorse.summary <- df.cas2.endorse.summary %>%
   ungroup() %>%
-  mutate(entire.sentence = 
-           factor(entire.sentence, levels = entire.sentence[order(mean)]))
+  mutate(tgrep.id = 
+           factor(tgrep.id, levels = tgrep.id[order(mean)]))
 
 
-df.cas2.endorse.summary[with(df.cas2.endorse.summary, order(-mean)),] %>% kable()
-# ggplot(df.cas2.endorse.summary, aes(x = entire.sentence, 
-#                            y = mean, ymin = ci_lower, ymax = ci_upper))+
-#   geom_bar(stat = 'identity', position = position_dodge())+
-#   geom_errorbar(position = position_dodge())+
-#   coord_flip()+
-#   ylab("Endorsement")+
-#   ylim(0,1)+
-#   geom_hline(yintercept = 0.5, lty = 3)
+# df.cas2.endorse.summary[with(df.cas2.endorse.summary, order(-mean)),] %>% kable()
+ggplot(df.cas2.endorse.summary, aes(x = tgrep.id,
+                           y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  coord_flip()+
+  ylab("Endorsement")+
+  ylim(0,1)+
+  geom_hline(yintercept = 0.5, lty = 3)
 ```
 
 
 
 ```{r}
 df.cas2.summary <- df2.cas %>%
-  group_by(entire.sentence, verb.phrase) %>%
+  group_by(tgrep.id, entire.sentence, verb.phrase) %>%
   multi_boot_standard(column = "agreement")
 ```
 
 ```{r fig.width=10}
 df.cas2.summary <- df.cas2.summary %>%
   ungroup() %>%
-  mutate(entire.sentence = 
-           factor(entire.sentence, levels = entire.sentence[order(mean)]))
+  mutate(tgrep.id = 
+           factor(tgrep.id, levels = tgrep.id[order(mean)]))
 
-ggplot(df.cas2.summary, aes(x = entire.sentence, 
+ggplot(df.cas2.summary, aes(x = tgrep.id, 
                            y = mean, ymin = ci_lower, ymax = ci_upper))+
   geom_bar(stat = 'identity', position = position_dodge())+
   geom_errorbar(position = position_dodge())+
@@ -180,7 +189,25 @@ ggplot(df.cas2.summary, aes(x = entire.sentence,
   ylim(0,1)+
   geom_hline(yintercept = 0.5, lty = 3)
 
-df.cas2.summary[with(df.cas2.summary, order(-mean)),] %>% kable()
+#df.cas2.summary[with(df.cas2.summary, order(-mean)),] %>% kable()
 ```
 
+
+
+```{r fig.width=8}
+df2.cas %>%
+  ggplot(., aes( x = agreement))+
+  #geom_density()+
+  geom_histogram()+
+  facet_wrap(~tgrep.id)
+```
+
+By subject
+
+```{r fig.width=8}
+df2.cas %>%
+  ggplot(., aes( x = agreement))+
+  geom_histogram()+
+  facet_wrap(~workerid)
+```
 
