@@ -33,7 +33,7 @@
     <link href="css/local-style.css" rel="stylesheet" type="text/css"/>
 
     <!-- experiment file -->
-    <script src="js/ccepe.js"></script>
+    <script src="js/valence.js"></script>
 
     <!-- stimulus file -->
     <script src="js/stimuli.js"></script>
@@ -45,57 +45,37 @@
   <div class="slide" id="i0" >
     <img src="../_shared/images/cocologo.png" alt="Stanford CoCoLab" id="cocologo"></img>
     <p id="cocolab">Stanford CoCoLab</p>
-    <p id="instruct-text">You will read 19 short conversations and be asked questions about them. The HIT should take about 10 minutes.</p>
+    <p id="instruct-text">You will read 30 short conversations and be asked questions about them. The HIT should take about 10 minutes.</p>
 
-    <!--<p style="font-family:courier; font-size:14px; text-align: justify;">Please note: There will be multiple posted versions of this HIT (name: <strong>Language Study - Actions 494</strong>) throughout the day. Please attempt only one HIT this series. You will not be allowed to complete multiple HITs in this series.</p>-->
-    <button id="start_button" type="button">Start Experiment</button>
+        <p style="font-family:courier; font-size:14px; text-align: justify;">Please note: There will be multiple posted versions of this HIT (name: <strong>Language Study - Conversations 006</strong>) throughout the day. Please attempt only one HIT this series. You will not be allowed to complete multiple HITs in this series.</p>
+        <button id="start_button" type="button">Start Experiment</button>
             <p id="legal">Legal information: By answering the following questions, you are participating in a study being performed by cognitive scientists in the Stanford Department of Psychology. If you have questions about this research, please contact Michael Henry Tessler at <a href="mailto://mtessler@stanford.edu">mtessler@stanford.edu</a> or Noah Goodman, at ngoodman@stanford.edu. You must be  at least 18 years old to participate. Your participation in this research is voluntary. You may decline to answer any or all of the following questions. You may decline further participation, at any time, without adverse consequences. Your anonymity is assured; the researchers who have requested your participation will not receive any personal information about you.</p>
 </div>
 
 <div class="slide" id="instructions">
     <h3>Instructions</h3>
-    <p>In this experiment, you will read dialogues between two people. One of the phrases will be underlined. We are going to ask you for other phrases similar to that one.</p>
+    <p>In this experiment, you read snippets of conversations between people. These were real conversational exchanges on the telephone. Because it was spoken, some of the language may be hard to read. Try your best to figure out what the speakers are trying to say to each other, and answer the questions as best you can. You will be asked to assess statements about properties that the speakers have mentioned.</p>
     <button onclick="_s.button()">Continue</button>
   </div>
 
-<div class="slide" id="generateEntities">
-  <p class="case" style="text-align: left;"></p>
-  <!--<p class="comparison_class" style="color:blue; font-weight:bold;"></p>-->
-  <p><span class="NP"></span> are a kind of <span class="comparison_class_singular" style="font-weight:bold"></span>. List <span class="n_entities">{{}}</span> other examples of <span class="comparison_class_plural" style="font-weight:bold"></span>. Press "Enter" after each example you give.</p>
-  <!-- <p class="display_condition">{{}}</p> -->
-  <!-- <input type="text" id="text_response"></input> -->
 
-  <div id="entityTable"> </div>
-  <p class="err" style="color:red">Please write another example.</p>
-</div>
-
-<div class="slide" id="priors">
-    <br/>
-    <br/>
-    <p class="prompt"> </p>
-    <table id="tableGenerator"> </table>
-    <button onclick="_s.button()">Continue</button>
-    <p class="err" style="color:red">Please respond to all of the questions.</p>
-</div>
-                         
-
-
-
-
-    <div class="slide" id="example_series">
-    <h3>Practice Example</h3>
+   <div class="slide" id="example_series">
+    <h3>Examples</h3>
+    <p>Read the following conversation snippet:</p>
     <p class="case" style="text-align: left;"></p>
     <p class="question"></p>
-    <div id="rate">
+    <div id="practice_rate">
         <p class="slider_number"></p>
-        <table id="slider_table" class="slider_table">
-            <tr><td class="left" id="training_left_bound" valign="middle" style="text-align:center"></td><td colspan="2"><div id="training_single_slider" class="slider"></div></td><td class="right" id="training_right_bound" valign="middle" style="text-align:center"></td></tr>
+        <table id="practice_slider_table" class="slider_table">
+            <tr><td class="left" id="practice_left_bound" valign="middle" style="text-align:center"></td><td colspan="2"><div id="practice_single_slider" class="slider"></div></td><td class="right" id="practice_right_bound" valign="middle" style="text-align:center"></td></tr>
         </table>
     </div>
     <br>
     <button onclick="_s.button()">Continue</button>
-    <div class="err">Please select a position for the slider.</div>
+    <div class="err"><br>Please select a position for the slider.</div>
+    <div id="practice_wrong_answer"><br>That answer is incorrect. Re-read the sentence and ask yourself whether the underlined attribute is positive or negative.</div>
   </div>
+
 
    <div class="slide" id="trial_series">
     <p>Read the following conversation snippet:</p>
@@ -109,7 +89,7 @@
     </div>
     <br>
     <button onclick="_s.button()">Continue</button>
-    <div class="err">Please select a position for the slider.</div>
+    <div class="err"><br>Please select a position for the slider.</div>
   </div>
 
   <div class="slide"  id="subj_info">

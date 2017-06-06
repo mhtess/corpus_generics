@@ -1,4 +1,4 @@
-var path = '../../generics_project/results/';
+var path = 'https://web.stanford.edu/~chakia/CoCoLab/corpus_generics/generics_project/results/';
 var fname = 'sample30.tab';
 
 function get_data(fullpath) {
