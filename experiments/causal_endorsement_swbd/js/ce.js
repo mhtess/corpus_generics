@@ -1,4 +1,4 @@
-var number_of_generic_trials = 19;
+var number_of_generic_trials = 30;
 var trialcounter = 0;
 var ordering_flag = 0;
 var generics = [];
@@ -63,7 +63,7 @@ function make_slides(f) {
  	    if (exp.binary_choice == "Yes") {
             var c_question = "Is there something about <b>[noun phrase]</b> that causes them to have the <u>underlined</u> property?";
         } else if (exp.binary_choice == "No") {
-            var c_question = 'Does <i>the person who said/wrote the statement <font color="blue">in blue</font></i> believe that there is something about <b>[noun phrase]</b> that causes them to have the <u>underlined</u> property?';
+            var c_question = 'Does <i>the person who said the statement <font color="blue">in blue</font></i> believe that there is something about <b>[noun phrase]</b> that causes them to have the <u>underlined</u> property?';
         } 
         option_text_1 = "<b>Strongly Disagree</b>";
         option_text_2 = "<b>Strongly Agree</b>";
@@ -215,7 +215,7 @@ function make_slides(f) {
  	    if (exp.binary_choice == "Yes") {
             var c_question = "Is there something about <b>[noun phrase]</b> that causes them to have the <u>underlined</u> property?";
         } else if (exp.binary_choice == "No") {
-            var c_question = 'Does <i>the person who said/wrote the statement <font color="blue">in blue</font></i> believe that there is something about <b>[noun phrase]</b> that causes them to have the <u>underlined</u> property?';
+            var c_question = 'Does <i>the person who said the statement <font color="blue">in blue</font></i> believe that there is something about <b>[noun phrase]</b> that causes them to have the <u>underlined</u> property?';
         } 
         option_text_1 = "<b>Definitely No</b>";
         option_text_2 = "<b>Definitely Yes</b>";
@@ -278,9 +278,25 @@ function make_slides(f) {
     },
 
     format_context : function(context) {
-        contexthtml = context.replace(/###./g, " ");
+        contexthtml = context.replace(/###speakera(\d+)./g, "<br><b>Speaker #1:</b>");
+        contexthtml = contexthtml.replace(/###speakerb(\d+)./g, "<br><b>Speaker #2:</b>");
+        contexthtml = contexthtml.replace(/###/g, " ");
+        if (!contexthtml.startsWith("<br><b>Speaker #")) {
+            var ssi = contexthtml.indexOf("Speaker #");
+            switch(contexthtml[ssi+"Speaker #".length]) {
+            case "1":
+                contexthtml = "<br><b>Speaker #2:</b> " + contexthtml;
+                break;
+            case "2":
+                contexthtml = "<br><b>Speaker #1:</b> " + contexthtml;
+                break;
+            default:
+                break;
+            }
+        };
         return contexthtml;
     },
+
 
     log_responses : function() {
       exp.data_trials.push({
@@ -340,7 +356,7 @@ function init() {
 
   repeatWorker = false;
   (function(){
-      var ut_id = "corpgen-causality-052217";
+      var ut_id = "corpgen-causality-053017";
       if (UTWorkerLimitReached(ut_id)) {
         $('.slide').empty();
         repeatWorker = true;
@@ -370,7 +386,6 @@ function init() {
       screenUW: exp.width
     };
   //blocks of the experiment:
-  //exp.structure=["i0", "instructions", "trial_series", 'subj_info', 'thanks'];
   exp.structure=["i0", "instructions", "example_series", "trial_series", 'subj_info', 'thanks'];
 
   exp.data_trials = [];

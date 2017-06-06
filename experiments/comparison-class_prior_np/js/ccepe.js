@@ -165,7 +165,7 @@ function make_slides(f) {
       $("#tableGenerator").html('<table id="tableGenerator"> </table>');
 
       $(".prompt").html(
-        "For each of the following, how many <strong>" + this.stim.VP + "</strong>?<br><br>"
+        "For each of the following types of " + this.stim.CCNP + ", how many <strong>" + this.stim.VP + "</strong>?<br><br>"
       );
 
 
@@ -318,7 +318,7 @@ function init() {
   exp.all_names = []; 
   exp.trials = [];
   exp.catch_trials = [];
-  var stimuli = generate_stim(10, true);
+  var stimuli = generate_stim(19, true);
   console.log(stimuli.length);
   //exp.stimuli = _.shuffle(stimuli).slice(0, 15);
   exp.stimuli = stimuli.slice();

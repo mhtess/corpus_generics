@@ -1,5 +1,5 @@
-var path = 'https://web.stanford.edu/~chakia/CoCoLab/corpus_generics/generics_project/results/';
-var fname = 'sample30.tab';
+var path = 'https://web.stanford.edu/~cfoster0/corpus_generics/generics_project/results/';
+var fname = 'wsj_19.tab';
 
 function get_data(fullpath) {
     var response = $.ajax({
@@ -44,7 +44,7 @@ function generate_stim(n, rand) {
 			    return result;
 		    }, {});
 	    });
-  
+
 	return stim;
 }
 
