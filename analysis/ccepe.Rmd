@@ -1,0 +1,83 @@
+---
+title: "Comparison class elicitation + prevalence elicitation"
+output: html_notebook
+---
+
+Run on 4/19/2017
+
+```{r}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(langcog)
+library(ggplot2)
+library(ggthemes)
+library(forcats)
+library(knitr)
+theme_set(theme_few())
+
+data.path <- "../data/pilots/"
+
+readData <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-trials.csv", sep = "")))
+}
+
+readSubjectInfo <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-subject_information.csv", sep = "")))
+}
+```
+
+
+Questionnaire information
+
+```{r}
+df.info <- readSubjectInfo("pilot-ccepe-1")
+table(df.info$enjoyment)
+```
+Comments?
+
+```{r}
+df.info %>% select(comments) %>% filter(comments != "") %>% kable()
+```
+
+
+```{r}
+df<- readData("pilot-ccepe-1")
+
+df.cce <- df %>% filter(trial_type == "single_generic_trial")
+
+
+df.pe <- df %>% filter(is.na(trial_type)) %>%
+  select(workerid, tgrep_id, VP, NP, freq) %>%
+  mutate(VP = gsub("&quotechar","",VP))
+```
+
+
+```{r fig.width = 8, fig.height = 6}
+df.pe %>%
+  ggplot(., aes( x = freq)) + 
+  geom_histogram()+
+  facet_wrap(~ VP, scales = 'free')+
+  scale_x_continuous(limits = c(-0.05, 1.05), breaks = c(0, 0.5, 1))
+
+ggsave("~/Desktop/ccepe.pdf", width = 12, height = 6)
+```
+
+
+
+
+```{r}
+df.elicited <- df.pe %>% 
+  mutate(NP = tolower(NP)) %>%
+  group_by(VP, NP) %>%
+  summarize(n = n())
+
+df.elicited[with(df.elicited, order(VP, -n, NP)), ] %>% kable()
+```
+
+
+

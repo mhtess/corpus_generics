@@ -1,0 +1,451 @@
+---
+title: "Causality experiments"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+
+```{r}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(langcog)
+library(ggplot2)
+library(ggthemes)
+library(forcats)
+library(knitr)
+theme_set(theme_few())
+
+data.path <- "../data/pilots/"
+
+readData <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-trials.csv", sep = "")))
+}
+
+readSubjectInfo <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-subject_information.csv", sep = "")))
+}
+
+readTurkInfo <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-mturk.csv", sep = "")))
+}
+```
+
+
+# To do
+
+1. Get HIT completion time and remove Ps who complete task too quickly (clikc through)
+
+### Overview of Experiments:
+
+
+1. Causality 1 (5/8/2017): SWBD
+2. Causality 2 (5/23/2017): WSJ w/ endorsement
+3. Causality 2 SWBD (5/31/2017): SWBD w/ endorsement
+
+
+### Subject information
+
+
+Did people enjoy the experiment?
+
+```{r}
+df.info <- readSubjectInfo("pilot-causality-1")
+table(df.info$enjoyment)
+```
+Comments?
+
+```{r}
+df.info %>% select(comments) %>% filter(comments != "") %>% kable()
+```
+
+
+
+```{r}
+df.cas <- readData("pilot-causality-1")  %>%
+  mutate(verb.phrase = gsub("&quotechar", "", verb.phrase),
+         entire.sentence = gsub("&quotechar", "", entire.sentence))
+```
+
+```{r}
+df.cas.summary <- df.cas %>%
+  group_by(entire.sentence, verb.phrase) %>%
+  multi_boot_standard(column = "agreement")
+```
+
+```{r fig.width=10}
+df.cas.summary <- df.cas.summary %>%
+  ungroup() %>%
+  mutate(entire.sentence = 
+           factor(entire.sentence, levels = entire.sentence[order(mean)]))
+
+
+ggplot(df.cas.summary, aes(x = entire.sentence, 
+                           y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  coord_flip()+
+  ylab("Causality judgment (1 = agree; 0 = disagree)")+
+  ylim(0,1)+
+  geom_hline(yintercept = 0.5, lty = 3)
+```
+
+
+Full distributions
+
+By item
+
+```{r fig.width=12}
+df.cas %>%
+  ggplot(., aes( x = agreement))+
+  #geom_density()+
+  geom_histogram()+
+  facet_wrap(~entire.sentence)
+```
+
+By subject
+
+```{r fig.width=12}
+df.cas %>%
+  ggplot(., aes( x = agreement))+
+  geom_histogram()+
+  facet_wrap(~workerid)
+```
+
+
+# Valence 2
+
+### Subject information
+
+
+Did people enjoy the experiment?
+
+```{r}
+df2.info <- readSubjectInfo("pilot-causality-2")
+table(df2.info$enjoyment)
+```
+Comments?
+
+```{r}
+df2.info %>% select(comments) %>% filter(comments != "") %>% kable()
+```
+
+
+
+```{r}
+df2.cas <- readData("pilot-causality-2")  %>%
+  mutate(verb.phrase = gsub("&quotechar", "", verb.phrase),
+         entire.sentence = gsub("&quotechar", "", entire.sentence))
+```
+
+### Table of items
+
+```{r}
+unique(df2.cas %>% select(tgrep.id, entire.sentence, verb.phrase)) %>%
+  kable()
+```
+
+
+
+### Endorsements
+
+```{r fig.width=10}
+df.cas2.endorse.summary <- df2.cas %>%
+  rowwise() %>%
+  mutate(response = ifelse(choice == "Yes", 1, 0)) %>%
+  group_by(entire.sentence, verb.phrase, tgrep.id) %>%
+  multi_boot_standard(column = "response")
+
+df.cas2.endorse.summary <- df.cas2.endorse.summary %>%
+  ungroup() %>%
+  mutate(tgrep.id = 
+           factor(tgrep.id, levels = tgrep.id[order(mean)]))
+
+
+# df.cas2.endorse.summary[with(df.cas2.endorse.summary, order(-mean)),] %>% kable()
+ggplot(df.cas2.endorse.summary, aes(x = tgrep.id,
+                           y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  coord_flip()+
+  ylab("Endorsement")+
+  ylim(0,1)+
+  geom_hline(yintercept = 0.5, lty = 3)
+```
+
+
+
+```{r}
+df.cas2.summary <- df2.cas %>%
+  group_by(tgrep.id, entire.sentence, verb.phrase) %>%
+  multi_boot_standard(column = "agreement")
+```
+### Causality judgments
+
+```{r fig.width=10}
+df.cas2.summary <- df.cas2.summary %>%
+  ungroup() %>%
+  mutate(tgrep.id = 
+           factor(tgrep.id, levels = tgrep.id[order(mean)]))
+
+ggplot(df.cas2.summary, aes(x = tgrep.id, 
+                           y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  coord_flip()+
+  ylab("Causality judgment (1 = agree; 0 = disagree)")+
+  ylim(0,1)+
+  geom_hline(yintercept = 0.5, lty = 3)
+
+#df.cas2.summary[with(df.cas2.summary, order(-mean)),] %>% kable()
+```
+
+### Full distributions of causality judgments
+
+```{r fig.width=8}
+df2.cas %>%
+  ggplot(., aes( x = agreement))+
+  #geom_density()+
+  geom_histogram()+
+  facet_wrap(~tgrep.id)
+```
+
+By subject
+
+```{r fig.width=8}
+df2.cas %>%
+  ggplot(., aes( x = agreement))+
+  geom_histogram()+
+  facet_wrap(~workerid)
+```
+
+
+### Endorsement vs. causality judgment
+
+```{r}
+
+left_join(
+  df.cas2.endorse.summary %>%
+    rename(endorse = mean, 
+         endorse_lower = ci_lower,
+         endorse_upper = ci_upper),
+  df.cas2.summary %>%
+  rename(causality = mean, 
+         causality_lower = ci_lower,
+         causality_upper = ci_upper)
+) %>% ggplot(., aes (x = endorse, xmin = endorse_lower, xmax = endorse_upper,
+                     y = causality, ymin = causality_lower,
+                     ymax = causality_upper))+
+  geom_point()+
+  geom_errorbar(alpha = 0.15)+
+  geom_errorbarh(alpha = 0.15)+
+  xlim(0.2, 1)+ylim(0.2,1)+ coord_fixed()+
+  geom_abline(intercept = 0, slope = 1, lty = 3)
+
+```
+
+```{r}
+df2.cas.byEndorse <- df2.cas %>%
+  rowwise() %>%
+  group_by(entire.sentence, verb.phrase, tgrep.id, choice) %>%
+  multi_boot_standard(column = "agreement")
+
+
+ggplot(df2.cas.byEndorse, aes( x = tgrep.id, y = mean, fill = choice, group = choice))+
+  geom_col(position = position_dodge())+
+  coord_flip()
+```
+
+Causality by endorsement (collapse item)
+
+```{r}
+df2.cas.byEndorse.collapseItem <- df2.cas %>%
+  rowwise() %>%
+  group_by(choice) %>%
+  multi_boot_standard(column = "agreement")
+
+
+ggplot(df2.cas.byEndorse.collapseItem, aes( x = choice, y = mean, fill = choice, group = choice, ymin = ci_lower,ymax = ci_upper))+
+  geom_col(position = position_dodge())+geom_linerange()+
+  coord_flip()
+```
+
+# Valence 2 SWBD
+
+which includes endorsements
+
+### Subject information
+
+How long did it take people to complete the HIT?
+
+```{r}
+df2.sw.turk <-readTurkInfo("pilot-causality-swbd-2")
+qplot(df2.sw.turk$Answer.time_in_minutes)
+```
+
+
+
+Did people enjoy the experiment?
+
+```{r}
+df2.sw.info <- readSubjectInfo("pilot-causality-swbd-2")
+table(df2.sw.info$enjoyment)
+```
+Comments?
+
+```{r}
+df2.sw.info %>% select(comments) %>% filter(comments != "") %>% kable()
+```
+
+
+Filter out people who finished the HIT in under 5 minutes...
+
+```{r}
+df2.sw.cas <- left_join(
+  readData("pilot-causality-swbd-2")  %>%
+  mutate(verb.phrase = gsub("&quotechar", "", verb.phrase),
+         entire.sentence = gsub("&quotechar", "", entire.sentence)),
+  df2.sw.turk %>% select(workerid, Answer.time_in_minutes) )%>% 
+  filter(Answer.time_in_minutes > 5)
+```
+
+### Table of items
+
+```{r}
+unique(df2.sw.cas %>% select(tgrep.id, entire.sentence, verb.phrase)) %>%
+  kable()
+```
+
+
+
+### Endorsements
+
+```{r fig.width=10}
+df.sw.cas2.endorse.summary <- df2.sw.cas %>%
+  rowwise() %>%
+  mutate(response = ifelse(choice == "Yes", 1, 0)) %>%
+  group_by(entire.sentence, verb.phrase, tgrep.id) %>%
+  multi_boot_standard(column = "response") %>%
+  ungroup() %>%
+  mutate(entire.sentence = 
+           factor(entire.sentence, levels = entire.sentence[order(mean)]))
+
+
+# df.cas2.endorse.summary[with(df.cas2.endorse.summary, order(-mean)),] %>% kable()
+ggplot(df.sw.cas2.endorse.summary, aes(x = entire.sentence,
+                           y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  coord_flip()+
+  ylab("Endorsement")+
+  ylim(0,1)+
+  geom_hline(yintercept = 0.5, lty = 3)
+```
+
+
+
+### Causality judgments
+
+```{r fig.width=10}
+df2.sw.cas.summary <- df2.sw.cas %>%
+  group_by(tgrep.id, entire.sentence, verb.phrase) %>%
+  multi_boot_standard(column = "agreement") %>%
+  ungroup() %>%
+  mutate(entire.sentence = 
+           factor(entire.sentence, levels = entire.sentence[order(mean)]))
+
+ggplot(df2.sw.cas.summary, aes(x = entire.sentence, 
+                           y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  coord_flip()+
+  ylab("Causality judgment (1 = agree; 0 = disagree)")+
+  ylim(0,1)+
+  geom_hline(yintercept = 0.5, lty = 3)
+
+#df.cas2.summary[with(df.cas2.summary, order(-mean)),] %>% kable()
+```
+
+### Full distributions of causality judgments
+
+```{r fig.width=10}
+df2.sw.cas %>%
+  ggplot(., aes( x = agreement))+
+  #geom_density()+
+  geom_histogram()+
+  facet_wrap(~entire.sentence)+
+  xlab("causality judgment by item")
+```
+
+By subject
+
+```{r fig.width=8}
+df2.sw.cas %>%
+  ggplot(., aes( x = agreement))+
+  geom_histogram()+
+  facet_wrap(~workerid)+
+  xlab("causality judgment by worker")
+```
+
+
+### Endorsement vs. causality judgment
+
+```{r}
+
+left_join(
+  df.sw.cas2.endorse.summary %>%
+    rename(endorse = mean, 
+         endorse_lower = ci_lower,
+         endorse_upper = ci_upper),
+  df2.sw.cas.summary %>%
+  rename(causality = mean, 
+         causality_lower = ci_lower,
+         causality_upper = ci_upper)
+) %>% ggplot(., aes (x = endorse, xmin = endorse_lower, xmax = endorse_upper,
+                     y = causality, ymin = causality_lower,
+                     ymax = causality_upper))+
+  geom_point()+
+  geom_errorbar(alpha = 0.15)+
+  geom_errorbarh(alpha = 0.15)+
+  xlim(0, 1.01)+ylim(0,1.01)+ coord_fixed()+
+  geom_abline(intercept = 0, slope = 1, lty = 3)
+
+```
+
+```{r fig.width =10}
+df2.sw.cas.byEndorse <- df2.sw.cas %>%
+  rowwise() %>%
+  group_by(entire.sentence, verb.phrase, tgrep.id, choice) %>%
+  multi_boot_standard(column = "agreement") %>%
+  ungroup() %>%
+  mutate(entire.sentence = 
+           factor(entire.sentence, levels = entire.sentence[order(mean)]))
+
+
+ggplot(df2.sw.cas.byEndorse, aes( x = entire.sentence, y = mean, ymin = ci_lower, ymax = ci_upper, fill = choice, group = choice))+
+  geom_col(position = position_dodge())+ 
+  geom_errorbar(position = position_dodge())+
+  coord_flip()+
+  ylab("causality judgment by agreement")
+```
+
+Causality by endorsement (collapse item)
+
+```{r}
+df2.sw.cas.byEndorse.collapseItem <- df2.sw.cas %>%
+  rowwise() %>%
+  group_by(choice) %>%
+  multi_boot_standard(column = "agreement")
+
+
+ggplot(df2.sw.cas.byEndorse.collapseItem, aes( x = choice, y = mean, fill = choice, group = choice, ymin = ci_lower,ymax = ci_upper))+
+  geom_col(position = position_dodge())+geom_linerange()+
+  coord_flip()+
+  ylab('causality judgment, collapse item')
+```
+
