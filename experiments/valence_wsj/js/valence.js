@@ -1,4 +1,4 @@
-var number_of_generic_trials = 25;
+var number_of_generic_trials = 19;
 var trialcounter = 0;
 var ordering_flag = 0;
 var generics = [];
@@ -143,7 +143,14 @@ function make_slides(f) {
 	$(".err").hide();
 	this.generic = stim;
 	var generic = stim;
-	var contexthtml = this.format_context(generic.Context);
+
+    // Workaround an issue with reading in header names. The context must be the last row in the data.
+    var lastkey;
+    for (key in generic) {
+        lastkey = key;
+    }
+    this.Context = generic[lastkey];
+    var contexthtml = this.format_context(this.Context);
 	usentence = generic.Sentence.replace(generic.VP, "<u>" + generic.VP + "</u>");
 	$(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
 	this.question = "From very bad to very good, how good is it to have the underlined property?";
@@ -198,22 +205,8 @@ function make_slides(f) {
     },
 
     format_context : function(context) {
-        contexthtml = context.replace(/###speakera(\d+)./g, "<br><b>Speaker #1:</b>");
-        contexthtml = contexthtml.replace(/###speakerb(\d+)./g, "<br><b>Speaker #2:</b>");
-        contexthtml = contexthtml.replace(/###/g, " ");
-        if (!contexthtml.startsWith("<br><b>Speaker #")) {
-            var ssi = contexthtml.indexOf("Speaker #");
-            switch(contexthtml[ssi+"Speaker #".length]) {
-            case "1":
-                contexthtml = "<br><b>Speaker #2:</b> " + contexthtml;
-                break;
-            case "2":
-                contexthtml = "<br><b>Speaker #1:</b> " + contexthtml;
-                break;
-            default:
-                break;
-            }
-        };
+        contexthtml = context.replace(/###/g, " ");
+        contexthtml = contexthtml.replace(/@/g, ".");
         return contexthtml;
     },
 
@@ -227,7 +220,7 @@ function make_slides(f) {
 	"verb phrase" : this.generic.VP,
 	"verb" : this.generic.Verb,
 	"entire sentence" : this.generic.Sentence,
-    "context" : this.generic.Context,
+    "context" : this.Context,
   "right_side" : exp.rightSide
       });
     }

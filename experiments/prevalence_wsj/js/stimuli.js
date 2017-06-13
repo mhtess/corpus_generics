@@ -21,7 +21,7 @@ function generate_stim(n, rand) {
 	    headings = rows[0].split('\t');
 
 	    if (rand == true) {
-		    var total = rows.length - 1;
+		    var total = rows.length - 2;
 		    var rnums = [];
 		    while (rnums.length < n) {
 			    rnum = Math.floor((Math.random() * total) + 1);

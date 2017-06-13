@@ -141,125 +141,14 @@ function make_slides(f) {
 	"verb phrase" : this.generic.VP,
 	"verb" : this.generic.Verb,
 	"entire sentence" : this.generic.Sentence,
-    "context" : this.generic.Context,
+    "context" : this.Context,
     "freq" : exp.sliderPost[0],
       });
     },
 
   });
 
-  slides.priors = slide({
-    name: "priors",
-
-    present: exp.stimscopy,
-
-    present_handle : function(stim) {
-      this.startTime = Date.now()
-      this.stim =  stim;
-      this.trialNum = exp.stimcounter;
-      this.examples = exp.all_names[this.trialNum];
-      this.allZeros = 1;
-      this.hypothetical = 0;
-      this.askDirect = 0;
-
-      $("#tableGenerator").html('<table id="tableGenerator"> </table>');
-
-      $(".prompt").html(
-        "For each of the following types of " + this.stim.CCNP + ", how many <strong>" + this.stim.VP + "</strong>?<br><br>"
-      );
-
-
-
-
-      // create response table
-      for(i=0; i<exp.n_entities; i++){
-
-
-        var dispRow = $(document.createElement('tr'))
-             .attr("id", 'rowp' + i);
-        var numRow = $(document.createElement('tr'))
-             .attr("id", 'rown' + i);
-        var newRow = $(document.createElement('tr'))
-             .attr("id", 'row' + i);
-
-        var freqBox = $(document.createElement('td'))
-             .attr("id", 'freqbox' + i);
-
-        dispRow.append('<td/>');
-        dispRow.append('<td style="text-align:center"><strong>' + this.stim.VP + "</strong>" + " that " + this.stim.VP + "</td>");
-        dispRow.append('<td/>');
-        dispRow.appendTo("#tableGenerator");
-
-        numRow.append('<td class="left">0%</td>');
-        numRow.append('<td><p style="text-align:center" id="slider_number' + i + '">---</p></td>');
-        numRow.append('<td class="right">100%</td>');
-        numRow.appendTo("#tableGenerator");
-
-        freqBox.after().html('<div id="freqbox_response' + i + '" class="slider"></div>');
-
-        newRow.append('<td/>');
-        newRow.append(freqBox);
-        newRow.append('<td/>');
-
-        newRow.appendTo("#tableGenerator");
-      }
-      $(".err").hide();
-      this.init_numeric_sliders();
-      exp.sliderPost = []; 
-    },
-
-
-    init_numeric_sliders : function() {
-        for (i=0; i<exp.n_entities; i++) {
-            utils.make_slider("#freqbox_response" + i, this.make_slider_callback(i));
-        }
-    },
-
-    make_slider_callback : function(i) {
-      return function(event, ui) {
-        exp.sliderPost[i] = ui.value;
-        $("#slider_number" + i).html(Math.round(exp.sliderPost[i]*100) + "%");
-      };
-    },
-
-
-
-    button : function() {
-      var freqs = [], intervals = [];
-
-      for(i=0; i<exp.n_entities; i++){
-        var f = parseInt(exp.sliderPost[i]*100);
-        freqs.push(isNaN(f) ? "" : f)
-      }
-
-      // check if all fields are filled
-      if (freqs.indexOf("") == -1) {
-            this.log_responses();
-            exp.stimcounter++;
-            _stream.apply(this);
-      } else {
-        $(".err").show();
-      }
-
-    },
-
-    log_responses : function() {
-      var rt = Date.now() - this.startTime;
-      var trialNum = exp.stimscopy.indexOf(this.stim) + 1;
-      for(i=0; i<exp.n_entities; i++){
-        exp.data_trials.push({
-          "trialNum" : this.trialNum,
-          "tgrep_id" : this.stim.Item_ID, 
-          "NP" : this.stim.NP,
-          "VP" : this.stim.VP,
-          "rt" : rt,
-          "freq" : exp.sliderPost[i],
-        })
-      }
-    }
-
-  });
-
+  
   slides.subj_info =  slide({
     name : "subj_info",
     submit : function(e){
@@ -340,7 +229,6 @@ function init() {
     "i0",
     "instructions",
     "generateEntities",
-    //"priors",
     "subj_info",
     "thanks"
   ];
