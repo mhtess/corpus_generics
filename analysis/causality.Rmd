@@ -1,8 +1,8 @@
 ---
 title: "Causality experiments"
-output:
-  pdf_document: default
-  html_notebook: default
+author: MHT
+date: June 22, 2017
+output: github_document
 ---
 
 
@@ -34,12 +34,16 @@ readSubjectInfo <- function(project){
 readTurkInfo <- function(project){
   return(read.csv(paste(data.path, project, "/", project, "-mturk.csv", sep = "")))
 }
+
+readTimeInfo <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-time.csv", sep = "")))
+}
 ```
 
 
 # To do
 
-1. Get HIT completion time and remove Ps who complete task too quickly (clikc through)
+1. Get HIT completion time and remove Ps who complete task too quickly (i.e., they just click through)
 
 ### Overview of Experiments:
 
@@ -47,6 +51,7 @@ readTurkInfo <- function(project){
 1. Causality 1 (5/8/2017): SWBD
 2. Causality 2 (5/23/2017): WSJ w/ endorsement
 3. Causality 2 SWBD (5/31/2017): SWBD w/ endorsement
+4. Causality 1 WIKI (6/21/2017): WIKI w/ endorsement (incl., "dont know" option)
 
 
 ### Subject information
@@ -118,7 +123,7 @@ df.cas %>%
 ```
 
 
-# Valence 2
+# Causality 2
 
 ### Subject information
 
@@ -275,7 +280,7 @@ ggplot(df2.cas.byEndorse.collapseItem, aes( x = choice, y = mean, fill = choice,
   coord_flip()
 ```
 
-# Valence 2 SWBD
+# Causality 2 SWBD
 
 which includes endorsements
 
@@ -447,5 +452,109 @@ ggplot(df2.sw.cas.byEndorse.collapseItem, aes( x = choice, y = mean, fill = choi
   geom_col(position = position_dodge())+geom_linerange()+
   coord_flip()+
   ylab('causality judgment, collapse item')
+```
+
+
+
+
+# Causality 1 WSJ
+
+Endorsement task includes "dont know" option
+
+### Subject information
+
+How long did it take people to complete the HIT?
+
+```{r}
+#df.wiki.turk <-readTurkInfo("pilot-causality-wiki-1")
+project <- "pilot-causality-wiki-1"
+
+write.csv(select(df.wiki.turk, workerid, Answer.time_in_minutes), file = paste(data.path, project, "/", project, "-time.csv", sep = ""),
+          row.names = F)
+
+df.wiki.time <- readTimeInfo("pilot-causality-wiki-1")
+qplot(df.wiki.time$Answer.time_in_minutes)
+```
+
+
+
+Did people enjoy the experiment?
+
+```{r}
+df.wiki.info <- readSubjectInfo(project)
+table(df.wiki.info$enjoyment)
+```
+Comments?
+
+```{r}
+df.wiki.info %>% select(comments) %>% filter(comments != "") %>% kable()
+```
+
+
+Filter out people who finished the HIT in under 5 minutes...
+
+```{r}
+
+print(paste("excluding ", sum(mutate(df.wiki.time, exclude = Answer.time_in_minutes < 5)$exclude),
+            "for finishing the task in under 5 minutes", sep = "" ))
+
+df.wiki.cas <- left_join(
+  readData(project), df.wiki.time) %>% 
+  filter(Answer.time_in_minutes > 5) %>%
+  mutate(entire.sentence = gsub("&quotechar","", entire.sentence),
+         verb.phrase = gsub("&quotechar","", verb.phrase),
+          hoice = gsub("&quotechar","", choice))
+
+```
+
+### Table of items
+
+```{r}
+unique(df.wiki.cas %>% select(tgrep.id, entire.sentence, verb.phrase)) %>%
+  kable()
+```
+
+
+
+### Endorsements
+
+```{r fig.width=16}
+# df.wiki.cas.endorse.summary <- df.wiki.cas %>%
+#   group_by(entire.sentence, verb.phrase, tgrep.id) %>%
+#   multi_boot_standard(column = "response") %>%
+#   ungroup() %>%
+#   mutate(entire.sentence = 
+#            factor(entire.sentence, levels = entire.sentence[order(mean)]))
+# df.cas2.endorse.summary[with(df.cas2.endorse.summary, order(-mean)),] %>% kable()
+ggplot(df.wiki.cas, aes(x = tgrep.id, group = choice, fill = choice))+
+  geom_bar(position = position_dodge())+
+  coord_flip()+
+  ylab("Endorsement")+
+  #ylim(0,1)+
+  geom_hline(yintercept = 0.5, lty = 3)
+```
+
+
+
+### Causality judgments
+
+```{r fig.width=10}
+df.wiki.cas.summary <- df.wiki.cas %>%
+  group_by(tgrep.id, entire.sentence, verb.phrase) %>%
+  multi_boot_standard(column = "agreement") %>%
+  ungroup() %>%
+  mutate(tgrep.id = 
+           factor(tgrep.id, levels = tgrep.id[order(mean)]))
+
+ggplot(df.wiki.cas.summary, aes(x = tgrep.id, 
+                           y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  coord_flip()+
+  ylab("Causality judgment (1 = agree; 0 = disagree)")+
+  ylim(0,1)+
+  geom_hline(yintercept = 0.5, lty = 3)
+
+#df.cas2.summary[with(df.cas2.summary, order(-mean)),] %>% kable()
 ```
 

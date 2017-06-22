@@ -1,0 +1,19 @@
+workerid,trial_type,question,focus,verb phrase,verb,noun phrase,entire sentence,tgrep id,right_side
+0,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.97,carry Lyme disease.,carry,Ticks,Ticks carry Lyme disease.,11,NP
+0,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.99,build dams.,build,Beavers,Beavers build dams.,4,NP
+1,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.93,carry Lyme disease.,carry,Ticks,Ticks carry Lyme disease.,11,VP
+1,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.02,build dams.,build,Beavers,Beavers build dams.,4,VP
+2,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.04,build dams.,build,Beavers,Beavers build dams.,4,VP
+2,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.97,carry Lyme disease.,carry,Ticks,Ticks carry Lyme disease.,11,VP
+3,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.42,carry Lyme disease.,carry,Ticks,Ticks carry Lyme disease.,11,NP
+3,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.24,build dams.,build,Beavers,Beavers build dams.,4,NP
+4,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.85,carry Lyme disease.,carry,Ticks,Ticks carry Lyme disease.,11,NP
+4,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.83,build dams.,build,Beavers,Beavers build dams.,4,NP
+5,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.98,build dams.,build,Beavers,Beavers build dams.,4,VP
+5,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.37,carry Lyme disease.,carry,Ticks,Ticks carry Lyme disease.,11,VP
+6,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.93,build dams.,build,Beavers,Beavers build dams.,4,NP
+6,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.07,carry Lyme disease.,carry,Ticks,Ticks carry Lyme disease.,11,NP
+7,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.01,carry Lyme disease.,carry,Ticks,Ticks carry Lyme disease.,11,NP
+7,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.99,build dams.,build,Beavers,Beavers build dams.,4,NP
+8,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.16,build dams.,build,Beavers,Beavers build dams.,4,VP
+8,single_generic_trial,"In the underlined statement, what do you think the speaker meant? Read the options aloud, with emphasis on the bolded portion.",0.8,carry Lyme disease.,carry,Ticks,Ticks carry Lyme disease.,11,VP
