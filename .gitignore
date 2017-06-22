@@ -4,3 +4,4 @@ mturk/
 *swbd.tab*
 corpus_generics.Rproj
 *.Rhistory
+*-mturk.csv
