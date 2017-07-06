@@ -1,0 +1,147 @@
+---
+title: "LSA Proposal"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(langcog)
+library(ggplot2)
+library(ggthemes)
+library(forcats)
+library(knitr)
+library(languageR)
+theme_set(theme_few())
+
+data.path <- "../data/pilots/"
+
+readData <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-trials.csv", sep = "")))
+}
+
+readSubjectInfo <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-subject_information.csv", sep = "")))
+}
+
+readTurkInfo <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-mturk.csv", sep = "")))
+}
+
+readTimeInfo <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-time.csv", sep = "")))
+}
+```
+
+
+## Load data
+
+### Switchboard
+
+```{r load.swbd}
+df.swbd.caus <- readData("pilot-causality-swbd-2") %>%
+  select(workerid, agreement, entire.sentence, tgrep.id,
+         choice) %>%
+  mutate(choice = ifelse(as.character(choice) == "Yes", 1, 0)) %>%
+  rename(causality = agreement, endorsement = choice) %>%
+  gather(task, val, endorsement, causality)
+
+df.swbd.val <- readData("pilot-valence-1") %>%
+  select(workerid, valence, entire.sentence, tgrep.id) %>%
+  mutate(workerid = workerid + max(df.swbd.caus$workerid) + 1,
+         task = 'valence') %>%
+  rename(val = valence)
+
+## Strip out 0s and last ":" in tgrep.id
+df.swbd.prev <- readData("pilot-listener-prevalence-1") %>%
+  select(workerid, freq, entire.sentence, tgrep.id) %>%
+  mutate(workerid = workerid + max(df.swbd.val$workerid) + 1,
+         task = 'prevalence') %>%
+  rename(val = freq)
+
+
+df.swbd <- bind_rows(df.swbd.caus, df.swbd.val, df.swbd.prev)
+```
+### WSJ
+
+```{r load.wsj}
+df.wsj.caus <- readData("pilot-causality-2") %>%
+  select(workerid, agreement, entire.sentence, tgrep.id,
+         choice) %>%
+  mutate(choice = ifelse(as.character(choice) == "Yes", 1, 0)) %>%
+  rename(causality = agreement, endorsement = choice) %>%
+  gather(task, val, endorsement, causality)
+
+df.wsj.val <- readData("pilot-valence-wsj-1") %>%
+  select(workerid, valence, entire.sentence, tgrep.id) %>%
+  mutate(workerid = workerid + max(df.swbd.caus$workerid) + 1,
+         task = 'valence') %>%
+  rename(val = valence)
+
+## Strip out 0s and last ":" in tgrep.id
+df.wsj.prev <- readData("pilot-listener-prevalence-wsj-1") %>%
+  select(workerid, freq, entire.sentence, tgrep.id) %>%
+  mutate(workerid = workerid + max(df.swbd.val$workerid) + 1,
+         task = 'prevalence') %>%
+  rename(val = freq)
+
+
+df.wsj <- bind_rows(df.wsj.caus, df.wsj.val, df.wsj.prev)
+```
+
+### Wikipedia
+
+```{r load.wiki}
+df.wiki.caus <- readData("pilot-causality-wiki-1") %>%
+  select(workerid, agreement, entire.sentence, tgrep.id,
+         choice) %>%
+  mutate(choice = ifelse(as.character(choice) == "Yes", 1, 0)) %>%
+  rename(causality = agreement, endorsement = choice) %>%
+  gather(task, val, endorsement, causality)
+
+df.wiki.val <- readData("pilot-valence-wiki-1") %>%
+  select(workerid, valence, entire.sentence, tgrep.id) %>%
+  mutate(workerid = workerid + max(df.swbd.caus$workerid) + 1,
+         task = 'valence') %>%
+  rename(val = valence)
+
+## Strip out 0s and last ":" in tgrep.id
+df.wiki.prev <- readData("pilot-listener-prevalence-wiki-1") %>%
+  select(workerid, freq, entire.sentence, tgrep.id) %>%
+  mutate(workerid = workerid + max(df.swbd.val$workerid) + 1,
+         task = 'prevalence') %>%
+  rename(val = freq)
+
+
+df.wiki <- bind_rows(df.wiki.caus, df.wiki.val, df.wiki.prev)
+```
+
+
+```{r merge.data}
+df.allcorps <- bind_rows(
+  df.swbd %>% mutate(corpus = 'swbd'),
+  df.wsj %>% mutate(corpus = 'wsj'),
+  df.wiki %>% mutate(corpus = 'wiki')
+)
+```
+
+
+# exploration
+
+```{r}
+df.summary <- df.allcorps %>%
+  group_by(corpus, task, entire.sentence) %>%
+  multi_boot_standard(column = 'val', na.rm = T)
+```
+
+
+```{r}
+df.summary %>% 
+  select(-ci_lower, -ci_upper) %>%
+  spread(task, mean) %>%
+  ungroup() %>%
+  select(-corpus, -entire.sentence) %>%
+  pairscor.fnc(.)
+```
+
+
