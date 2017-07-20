@@ -11,13 +11,13 @@ library(data.table)
 ```
 
 ```{r loadDB}
-d <- data.table::fread("http://stanford.edu/~cfoster0/corpus_generics/generics_project/results/swbd.tab")
+d <- data.table::fread("http://stanford.edu/~cfoster0/corpus_generics/generics_project/results/swbd.tab.full")
 ```
 
 Stuff we've excluded
 
 ```{r}
-exclude <- c("139091:13","97640:23","84527:24","28910:9","149611:20","171556:16","132445:9","13490:38","166108:36","175599:89","98639:28")
+exclude <- c("139091:13","97640:23","84527:24","28910:9","149611:20","171556:16","132445:9","13490:38","166108:36","175599:89","98639:28","116525:63","131756:4","100047:4","126696:31","94210:8","125279:22","76399:11","94119:23","125274:10","69995:9","102082:17","131642:4","173383:8","153450:19","92533:6","59537:65","167132:4","2720:11","67102:12","75242:4","76838:19","76323:4","115657:16")
 ```
 Let's get a random sample and see how we feel about it.
 
@@ -26,6 +26,25 @@ Let's get a random sample and see how we feel about it.
 d.pilot <- d %>%
   filter(!(Item_ID %in% exclude)) %>%
   sample_n(50)
+d.pilot = d.pilot %>%
+  filter(!(Item_ID %in% exclude))
+write.table(sample_n(d.pilot,30),file="/Users/titlis/cogsci/projects/stanford/projects/corpus_generics/analysis/sample30.tab",row.names=F,quote=F,sep="\t",col.names=T)
 ```
 
+Get a sample of "people" cases.
+```{r}
+d.pilot <- d %>%
+  filter(!(Item_ID %in% exclude) & Noun == "people")
+write.table(d.pilot,file="/Users/titlis/cogsci/projects/stanford/projects/corpus_generics/analysis/sample_people.tab",row.names=F,quote=F,sep="\t",col.names=T)
+```
+
+Get a sample of non-"people" cases.
+```{r}
+d.pilot <- d %>%
+  filter(!(Item_ID %in% exclude) & Noun != "people") %>%
+  sample_n(50)
+d.pilot = d.pilot %>%
+  filter(!(Item_ID %in% exclude))
+write.table(sample_n(d.pilot,30),file="/Users/titlis/cogsci/projects/stanford/projects/corpus_generics/analysis/sample_nonpeople.tab",row.names=F,quote=F,sep="\t",col.names=T)
+```
 

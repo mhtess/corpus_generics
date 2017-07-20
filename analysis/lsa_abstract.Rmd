@@ -129,19 +129,85 @@ df.allcorps <- bind_rows(
 # exploration
 
 ```{r}
-df.summary <- df.allcorps %>%
-  group_by(corpus, task, entire.sentence) %>%
-  multi_boot_standard(column = 'val', na.rm = T)
+missing.judgments <- as.character(filter(
+  data.frame(with(df.allcorps, table(task, entire.sentence))),
+  Freq == 0)$entire.sentence)
 ```
 
 
 ```{r}
-df.summary %>% 
-  select(-ci_lower, -ci_upper) %>%
-  spread(task, mean) %>%
-  ungroup() %>%
-  select(-corpus, -entire.sentence) %>%
-  pairscor.fnc(.)
+df.summary <- df.allcorps %>%
+  filter(!(entire.sentence %in% missing.judgments)) %>%
+  mutate(entire.sentence = factor(entire.sentence),
+         task = factor(task)) %>%
+  group_by(task, entire.sentence) %>%
+  multi_boot_standard(column = 'val', nboot = 100)
+
+
+df.summary  <- left_join(
+  df.summary,
+  df.allcorps %>% select(task, entire.sentence, corpus) %>%
+    distinct()
+)
+```
+
+# PLOTS
+
+```{r}
+df.summary.corpus.task <- df.allcorps %>%
+  filter(!(entire.sentence %in% missing.judgments)) %>%
+  group_by(task, corpus) %>%
+  multi_boot_standard(column = 'val')
+
+ggplot(df.summary.corpus.task, aes( x = task, y = mean, fill = corpus,
+                        ymin = summary_ci_lower, 
+                        ymax = summary_ci_upper))+
+  geom_col(position = position_dodge())+
+  geom_errorbar(position = position_dodge())
+```
+
+
+```{r}
+ggplot(df.allcorps, aes( x = val, fill = corpus))+
+  geom_density()+
+  facet_grid(task~corpus, scales = 'free')
+```
+
+```{r}
+df.allcorps %>%
+  filter(task != "endorsement") %>%
+  group_by(task, corpus, entire.sentence) %>%
+  summarize(variance = sd(val)^2,
+            m = mean(val)) %>%
+  gather(key, val, variance, m) %>%
+  ggplot(., aes(x = val, fill = corpus))+
+  geom_density(alpha = 0.45)+
+  facet_grid(key~task, scales = 'free')
+```
+
+
+Spread values
+
+```{r}
+df.spread <- df.summary %>%
+  select(-summary_ci_lower, -summary_ci_upper) %>%
+  spread(task, mean)
+
+m = lm(prevalence ~ causality*corpus, data = df.spread)
+summary(m)
+
+m1 = lm(endorsement ~ causality*corpus, data = df.spread)
+summary(m1)
+
+
+m2 = lm(endorsement ~ prevalence*causality*corpus, data = df.spread)
+summary(m2)
+m2.nocorp = lm(endorsement ~ prevalence*causality, data = df.spread)
+summary(m2.nocorp)
+
+anova(m2.nocorp,m2)
+
+
 ```
 
 
