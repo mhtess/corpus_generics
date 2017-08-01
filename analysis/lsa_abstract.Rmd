@@ -1,6 +1,8 @@
 ---
 title: "LSA Proposal"
-output: html_notebook
+author: "M. H. Tessler"
+date: "7/21/2017"
+output: github_document
 ---
 
 ```{r}
@@ -12,9 +14,11 @@ library(ggthemes)
 library(forcats)
 library(knitr)
 library(languageR)
+library(lme4)
 theme_set(theme_few())
 
 data.path <- "../data/pilots/"
+fig.path <- "figures/"
 
 readData <- function(project){
   return(read.csv(paste(data.path, project, "/", project, "-trials.csv", sep = "")))
@@ -39,51 +43,73 @@ readTimeInfo <- function(project){
 ### Switchboard
 
 ```{r load.swbd}
-df.swbd.caus <- readData("pilot-causality-swbd-2") %>%
-  select(workerid, agreement, entire.sentence, tgrep.id,
-         choice) %>%
+df.swbd.caus.time <- readTimeInfo("pilot-causality-swbd-2")
+df.swbd.caus <- left_join(
+    readData("pilot-causality-swbd-2") %>%
+    select(workerid, agreement, entire.sentence, tgrep.id,
+           choice),
+  df.swbd.caus.time) %>%
   mutate(choice = ifelse(as.character(choice) == "Yes", 1, 0)) %>%
-  rename(causality = agreement, endorsement = choice) %>%
+  rename(causality = agreement, endorsement = choice,
+         totalTime = Answer.time_in_minutes) %>%
   gather(task, val, endorsement, causality)
 
-df.swbd.val <- readData("pilot-valence-1") %>%
-  select(workerid, valence, entire.sentence, tgrep.id) %>%
+df.swbd.val.time <- readTimeInfo("pilot-valence-1")
+df.swbd.val <- left_join(
+    readData("pilot-valence-1") %>%
+      select(workerid, valence, entire.sentence, tgrep.id),
+  df.swbd.val.time) %>%
   mutate(workerid = workerid + max(df.swbd.caus$workerid) + 1,
          task = 'valence') %>%
-  rename(val = valence)
+  rename(val = valence,
+         totalTime = Answer.time_in_minutes)
 
 ## Strip out 0s and last ":" in tgrep.id
-df.swbd.prev <- readData("pilot-listener-prevalence-1") %>%
-  select(workerid, freq, entire.sentence, tgrep.id) %>%
+df.swbd.prev.time <- readTimeInfo("pilot-listener-prevalence-1")
+df.swbd.prev <- left_join(
+    readData("pilot-listener-prevalence-1") %>%
+    select(workerid, freq, entire.sentence, tgrep.id),
+  df.swbd.prev.time) %>%
   mutate(workerid = workerid + max(df.swbd.val$workerid) + 1,
          task = 'prevalence') %>%
-  rename(val = freq)
-
+  rename(val = freq,
+         totalTime = Answer.time_in_minutes)
+#df.swbd.all.prev<- readData("pilot-listener-prevalence-1")
 
 df.swbd <- bind_rows(df.swbd.caus, df.swbd.val, df.swbd.prev)
 ```
 ### WSJ
 
 ```{r load.wsj}
-df.wsj.caus <- readData("pilot-causality-2") %>%
-  select(workerid, agreement, entire.sentence, tgrep.id,
-         choice) %>%
-  mutate(choice = ifelse(as.character(choice) == "Yes", 1, 0)) %>%
-  rename(causality = agreement, endorsement = choice) %>%
+df.wsj.caus <- left_join(
+  readData("pilot-causality-2") %>%
+    select(workerid, agreement, entire.sentence, tgrep.id,
+         choice),
+  readTimeInfo("pilot-causality-2")) %>%
+  mutate(choice = ifelse(as.character(choice) == "Yes", 1, 0),
+         workerid = workerid + max(df.swbd.prev$workerid) + 1) %>%
+  rename(causality = agreement, endorsement = choice,
+         totalTime = Answer.time_in_minutes) %>%
   gather(task, val, endorsement, causality)
 
-df.wsj.val <- readData("pilot-valence-wsj-1") %>%
-  select(workerid, valence, entire.sentence, tgrep.id) %>%
-  mutate(workerid = workerid + max(df.swbd.caus$workerid) + 1,
+df.wsj.val <- left_join(
+    readData("pilot-valence-wsj-1") %>%
+      select(workerid, valence, entire.sentence, tgrep.id),
+  readTimeInfo("pilot-valence-wsj-1")) %>%
+  mutate(workerid = workerid + max(df.wsj.caus$workerid) + 1,
          task = 'valence') %>%
-  rename(val = valence)
+  rename(val = valence,
+         totalTime = Answer.time_in_minutes)
 
 ## Strip out 0s and last ":" in tgrep.id
-df.wsj.prev <- readData("pilot-listener-prevalence-wsj-1") %>%
-  select(workerid, freq, entire.sentence, tgrep.id) %>%
-  mutate(workerid = workerid + max(df.swbd.val$workerid) + 1,
+df.wsj.prev <- left_join(
+    readData("pilot-listener-prevalence-wsj-1") %>%
+      select(workerid, freq, entire.sentence, tgrep.id),
+    readTimeInfo("pilot-listener-prevalence-wsj-1")) %>%
+  mutate(workerid = workerid + max(df.wsj.val$workerid) + 1,
          task = 'prevalence') %>%
-  rename(val = freq)
+  rename(val = freq,
+         totalTime = Answer.time_in_minutes)
 
 
 df.wsj <- bind_rows(df.wsj.caus, df.wsj.val, df.wsj.prev)
@@ -92,30 +118,48 @@ df.wsj <- bind_rows(df.wsj.caus, df.wsj.val, df.wsj.prev)
 ### Wikipedia
 
 ```{r load.wiki}
-df.wiki.caus <- readData("pilot-causality-wiki-1") %>%
-  select(workerid, agreement, entire.sentence, tgrep.id,
-         choice) %>%
-  mutate(choice = ifelse(as.character(choice) == "Yes", 1, 0)) %>%
-  rename(causality = agreement, endorsement = choice) %>%
+df.wiki.caus <- left_join(
+    readData("pilot-causality-wiki-1") %>%
+      select(workerid, agreement, entire.sentence, tgrep.id,
+         choice),
+    readTimeInfo("pilot-causality-wiki-1")) %>%
+  mutate(choice = ifelse(as.character(choice) == "Yes", 1, 0),
+         workerid = workerid + max(df.wsj.prev$workerid) + 1) %>%
+  rename(causality = agreement, endorsement = choice,
+         totalTime = Answer.time_in_minutes) %>%
   gather(task, val, endorsement, causality)
 
-df.wiki.val <- readData("pilot-valence-wiki-1") %>%
-  select(workerid, valence, entire.sentence, tgrep.id) %>%
-  mutate(workerid = workerid + max(df.swbd.caus$workerid) + 1,
+df.wiki.val <- left_join(
+  readData("pilot-valence-wiki-1") %>%
+    select(workerid, valence, entire.sentence, tgrep.id),
+  readTimeInfo("pilot-valence-wiki-1") ) %>%
+  mutate(workerid = workerid + max(df.wiki.caus$workerid) + 1,
          task = 'valence') %>%
-  rename(val = valence)
+  rename(val = valence,
+         totalTime = Answer.time_in_minutes)
 
 ## Strip out 0s and last ":" in tgrep.id
-df.wiki.prev <- readData("pilot-listener-prevalence-wiki-1") %>%
-  select(workerid, freq, entire.sentence, tgrep.id) %>%
-  mutate(workerid = workerid + max(df.swbd.val$workerid) + 1,
+df.wiki.prev <- left_join(
+  readData("pilot-listener-prevalence-wiki-1") %>%
+    select(workerid, freq, entire.sentence, tgrep.id),
+  readTimeInfo("pilot-listener-prevalence-wiki-1") ) %>%
+  mutate(workerid = workerid + max(df.wiki.val$workerid) + 1,
          task = 'prevalence') %>%
-  rename(val = freq)
+  rename(val = freq,
+         totalTime = Answer.time_in_minutes)
 
 
 df.wiki <- bind_rows(df.wiki.caus, df.wiki.val, df.wiki.prev)
 ```
 
+
+We are missing judgments on some tasks for switchboard. Many (all?) of these removed  items had the NP "people"
+
+```{r}
+missing.judgments <- as.character(filter(
+  data.frame(with(df.allcorps, table(task, entire.sentence))),
+  Freq == 0)$entire.sentence)
+```
 
 ```{r merge.data}
 df.allcorps <- bind_rows(
@@ -125,45 +169,234 @@ df.allcorps <- bind_rows(
 )
 ```
 
+Time on task
 
-# exploration
+```{r analyzeTime}
+df.allcorps.time.summary <- df.allcorps %>% select(workerid, totalTime) %>%
+  distinct() %>%
+  summarize(aveTime = mean(totalTime),
+            sdTime = sd(totalTime),
+            aveLogTime = mean(log(totalTime)),
+            sdLogTime = sd(log(totalTime)),
+            lowLogTime = exp(aveLogTime - 1*sdLogTime),
+            highLogTime = exp(aveLogTime + 1*sdLogTime))
 
-```{r}
-missing.judgments <- as.character(filter(
-  data.frame(with(df.allcorps, table(task, entire.sentence))),
-  Freq == 0)$entire.sentence)
+
+df.allcorps %>% select(workerid, totalTime, corpus, task) %>%
+  distinct() %>%
+  ggplot(., aes( x= log(totalTime), fill = task))+
+  geom_histogram(position = position_dodge())
 ```
 
 
-```{r}
-df.summary <- df.allcorps %>%
-  filter(!(entire.sentence %in% missing.judgments)) %>%
-  mutate(entire.sentence = factor(entire.sentence),
-         task = factor(task)) %>%
-  group_by(task, entire.sentence) %>%
-  multi_boot_standard(column = 'val', nboot = 100)
 
+```{r filter.data}
+cutOffTimeInMinutes <- 4
 
-df.summary  <- left_join(
-  df.summary,
-  df.allcorps %>% select(task, entire.sentence, corpus) %>%
-    distinct()
-)
+df.allcorps.fastParticipants <- df.allcorps %>%
+  filter(totalTime < cutOffTimeInMinutes) %>% select(workerid) %>% distinct()
+
+df.allcorps.filtered <- df.allcorps %>%
+  filter(!(entire.sentence %in% missing.judgments),
+         task != "valence",
+         !(workerid %in% df.allcorps.fastParticipants$workerid))
 ```
+
+
 
 # PLOTS
 
+### Density plots
+
 ```{r}
-df.summary.corpus.task <- df.allcorps %>%
-  filter(!(entire.sentence %in% missing.judgments)) %>%
-  group_by(task, corpus) %>%
+df.allcorps.filtered %>%
+  filter(task != "endorsement") %>%
+  mutate(corpus = factor(corpus, levels = c("swbd", "wiki", "wsj"),
+                         labels = c("Switchboard", "Wikipedia", "WSJ"))) %>%
+  ggplot(., aes( x = val, color = corpus, lty = corpus))+
+  geom_density(adjust = 1.2, size = 1)+
+  scale_color_solarized()+
+  facet_grid(.~task, scales = 'free')+
+  scale_x_continuous(limits = c(0, 1), breaks = c(0, 1))+
+  ylab("Empirical probability density")+
+  xlab("Participant response")
+
+ggsave(paste(fig.path, "lsa-abstract-densities.png"), width = 6, height = 3)
+```
+
+```{r}
+df.items.summary <- df.allcorps.filtered %>%
+  group_by(corpus, task, entire.sentence) %>%
   multi_boot_standard(column = 'val')
 
+
+df.items.summary %>% 
+  select(-ci_lower, -ci_upper) %>%
+  spread(task, mean) %>% View()
+View(df.items.summary)
+```
+
+
+```{r}
+df.summary.corpus.task <- df.allcorps.filtered %>%
+  group_by(task, corpus) %>%
+  multi_boot_standard(column = 'val') %>%
+  ungroup() %>%
+  mutate(corpus = factor(corpus, levels = c("swbd", "wiki", "wsj"),
+                         labels = c("Switchboard", "Wikipedia", "WSJ")),
+         task = factor(task, levels = c("causality","prevalence", "endorsement"))) 
+
 ggplot(df.summary.corpus.task, aes( x = task, y = mean, fill = corpus,
-                        ymin = summary_ci_lower, 
-                        ymax = summary_ci_upper))+
-  geom_col(position = position_dodge())+
-  geom_errorbar(position = position_dodge())
+                        ymin = ci_lower, 
+                        ymax = ci_upper))+
+  geom_col(position = position_dodge(0.6), width = 0.6, color = 'black')+
+  geom_errorbar(position = position_dodge(0.6), width = 0.25)+
+  ylab("Mean human judgment")+
+  xlab("Behavioral task")+
+  scale_y_continuous(limits = c(0, 1), breaks = c(0, 0.5, 1))+
+  scale_fill_solarized()+
+  theme(axis.text.x = element_text(angle = 30, vjust = 0.5, hjust = 0.5))
+
+ggsave(paste(fig.path, "lsa-abstract-bars.png"), width = 6, height = 3)
+
+```
+
+### Scatter plots
+
+```{r}
+df.summary <- df.allcorps.filtered %>%
+  group_by(task, entire.sentence, corpus) %>%
+  multi_boot_standard(column = 'val') %>%
+  ungroup()
+
+df.spread <- bind_rows(
+    left_join(
+      df.summary %>%
+        filter(task == "endorsement"),
+      df.summary %>%
+        filter(task == "causality") %>%
+        select(-task) %>%
+        rename(caus_mean = mean, 
+               caus_ci_lower = ci_lower,
+               caus_ci_upper = ci_upper),
+      by = c("corpus", "entire.sentence")
+    ),
+    left_join(
+      df.summary %>%
+        filter(task == "prevalence"),
+      df.summary %>%
+        filter(task == "causality") %>%
+        select(-task) %>%
+        rename(caus_mean = mean, 
+               caus_ci_lower = ci_lower,
+               caus_ci_upper = ci_upper),
+      by = c("corpus", "entire.sentence")
+    )
+  )%>%
+  mutate(corpus = factor(corpus, levels = c("swbd", "wiki", "wsj"),
+                         labels = c("Switchboard", "Wikipedia", "WSJ")))
+
+ggplot(df.spread, aes( x = caus_mean, xmin = caus_ci_lower,
+                       xmax = caus_ci_upper, 
+                       y = mean, ymin = ci_lower, ymax = ci_upper, 
+                       color = corpus, shape = corpus, fill = corpus))+
+  geom_point(alpha=0.8)+
+  geom_smooth(method = 'lm', alpha = 0.3)+
+  geom_errorbar(alpha=0.2)+geom_errorbarh(alpha = 0.2)+
+  coord_fixed() + 
+  geom_abline(intercept = 0, slope = 1, lty = 3)+
+  scale_color_solarized()+
+  scale_fill_solarized()+
+  facet_wrap(~task)+
+  scale_x_continuous(limits = c(0.1, 1), breaks = c(0.1, 1))+
+  scale_y_continuous(limits = c(0.1, 1), breaks = c(0.1, 1))+
+  xlab("Mean causality judgment")+
+  ylab("Mean response (task specific)")
+
+ggsave(paste(fig.path, "lsa-abstract-scatters.png"), width = 6, height = 3)
+
+```
+
+
+
+
+
+Prevalence ~ Causality
+```{r}
+
+df.allcorps.withmeans <- df.allcorps.withmeans %>%
+  mutate(corpus  = factor(corpus) ) 
+contrasts(df.allcorps.withmeans$corpus) <- cbind('swbd' = c(1, 0, 0), 'wiki' = c(0, 1, 0))
+
+
+m.prev.caus.corp <- df.allcorps.withmeans %>%
+  filter(task == "prevalence") %>%
+  lmer(val ~ caus_centered * corpus + (1 | workerid) + (1 | entire.sentence), data = .)
+
+
+summary(m.prev.caus.corp)
+
+ranef(m.prev.caus.corp)
+```
+
+Endorsement ~ Causality
+```{r}
+
+m.endorse.caus.corp <- df.allcorps.withmeans %>%
+  filter(task == "endorsement") %>%
+  glmer(val ~ caus_centered * corpus + (1 | workerid) + (1 | entire.sentence),
+        family = 'binomial', data = .)
+
+
+summary(m.endorse.caus.corp)
+
+ranef(m.prev.caus.corp)
+```
+
+
+
+Raw data joined with mean judgments
+
+```{r}
+df.allcorps.withmeans <- left_join(df.allcorps.filtered, 
+                                   df.summary %>%
+                                     select(-ci_lower, -ci_upper) %>%
+                                     spread(task, mean)) %>%
+  mutate(prev_centered = prevalence - mean(prevalence),
+         caus_centered = causality - mean(causality))
+
+
+
+# df.allcorps.withmeans.filtered <- df.allcorps.withmeans %>%
+#   filter(!(entire.sentence %in% missing.judgments))
+  
+m.endorse.prev.caus <- df.allcorps.withmeans %>%
+  filter(task == "endorsement") %>%
+  # glmer(val ~ prevalence * causality + (1 | workerid) + (1 | entire.sentence), 
+  #       family = 'binomial', data = .)
+  glm(val ~  prev_centered * caus_centered * corpus , 
+        family = 'binomial', data = .)
+
+summary(m.endorse.prev.caus)
+
+## With corpus fixed effects
+
+m.endorse.prev.caus.corp <- df.allcorps.withmeans %>%
+  filter(task == "endorsement") %>%
+  glmer(val ~ prev_centered * caus_centered * corpus + (1 | workerid),
+        family = 'binomial', data = .)
+  # glm(val ~ prevalence * causality * corpus, 
+  #       family = 'binomial', data = .)
+
+summary(m.endorse.prev.caus.corp)
+```
+
+```{r}
+ggplot(df.spread, aes( x = causality, y = endorsement, color = corpus))+
+  geom_point()+
+  geom_smooth(method = 'lm')+
+  coord_fixed() + xlim(0.25,1) + ylim(0.25,1)+
+  geom_abline(intercept = 0, slope = 1, lty = 3)
 ```
 
 
@@ -186,12 +419,9 @@ df.allcorps %>%
 ```
 
 
-Spread values
 
 ```{r}
-df.spread <- df.summary %>%
-  select(-summary_ci_lower, -summary_ci_upper) %>%
-  spread(task, mean)
+
 
 m = lm(prevalence ~ causality*corpus, data = df.spread)
 summary(m)
@@ -209,5 +439,4 @@ anova(m2.nocorp,m2)
 
 
 ```
-
 
