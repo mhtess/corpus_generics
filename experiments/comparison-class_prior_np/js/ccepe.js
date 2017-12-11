@@ -342,7 +342,7 @@ function init() {
   exp.trials = [];
   exp.catch_trials = [];
   var stimuli = generate_stim(19, true);
-  console.log(stimuli);
+  // console.log(stimuli);
   //exp.stimuli = _.shuffle(stimuli).slice(0, 15);
   exp.stimuli = stimuli.slice();
   exp.n_trials = exp.stimuli.length;
