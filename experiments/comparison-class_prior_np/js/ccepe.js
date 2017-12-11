@@ -213,7 +213,7 @@ function make_slides(f) {
 
       $(".prompt").html(
         // "For each of the following types of " + this.stim.CCNP + ", how many <strong>" + this.stim.VP + "</strong>?<br><br>"
-        "For each of the following types of " + this.stim.CCNP + ", how likely is it that they <strong>" + this.stim.VP + "</strong>?<br>Please read the dialogue to better unstand what is meant by the underlined phrase.<br>"
+        "For each of the following types of " + this.stim.CCNP + ", how likely is it that they <strong>" + this.stim.VP + "</strong>?<br><em>Please read the dialogue to better understand what is meant by the underlined phrase.</em><br>"
       );
 
       // this.n_sliders = this.sentence_types.length;
