@@ -1,10 +1,20 @@
 # Comparison class elicitation + prevalence elicitation
 
+
+## CCEPE-1
+
 - 4/19/17
 - Only using items that are not obviously domain restricted (i.e., no "people" or "things").
 - Only assuming an NP-focus comparison class.
 - Participants generate 3 elements in comparison class (we specified comparison class NP by hand). Later, they rate prevalence.
 - n = 20 ($1.25) --> $25 + 40% fee = $35
+
+## CCEPE-2
+
+- 12/11/17
+- same setup as CCEPE-1
+- tweaked prior elicitation question, and added more instructions
+- n = 9 ($1.50) --> $13.5 + 2.7 fee = $16.2
 
 # Causality judgment
 
