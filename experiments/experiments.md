@@ -15,6 +15,7 @@
 - same setup as CCEPE-1
 - tweaked prior elicitation question, and added more instructions
 - n = 9 ($1.50) --> $13.5 + 2.7 fee = $16.2
+- + n = 9 ($1.50) --> $13.5 + 2.7 fee = $16.2
 
 # Causality judgment
 
@@ -64,3 +65,9 @@ n = 20 ($1.00) --> $20 + 20% = $24
 
 - 6/22/17
 - n = 20 ($1.00) --> $20 + 20% = $24
+
+## Switchboard
+
+- 12/12/17
+- parallel setup to CCEPE-2
+- n = 18 ($1.00) --> $18 + 3.6 fee = $21.6
