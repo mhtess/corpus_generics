@@ -65,7 +65,7 @@ function make_slides(f) {
       $(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
 
       $(".prompt").html(
-        "<strong>Assuming that the underlined statement is true</strong>,<br> how likely is it that an individual " + this.stim.NP_singular + " " + this.stim.VP_singular + "?<br><br><em>Please read the dialogue to better understand what is meant by the underlined phrase.</em><br>")
+        "Assuming that the underlined statement is true, <br> how likely is it that an individual " + this.stim.NP_singular + " " + this.stim.VP_singular + "?<br><br><em>Please read the dialogue to better understand what is meant by the underlined phrase.</em><br>")
       $(".slider_row").remove();
 
       // create response table
