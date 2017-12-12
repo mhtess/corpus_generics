@@ -1,51 +1,53 @@
 //var path = 'https://web.stanford.edu/~chakia/CoCoLab/corpus_generics/generics_project/results/';
-var path = 'https://web.stanford.edu/~cfoster0/corpus_generics/generics_project/results/';
-var fname = 'sample19_plus.tab';
 
-function get_data(fullpath) {
-    var response = $.ajax({
-        type: "GET",
-        async: false,
-        url: fullpath,
-        dataType: "text",
-    });
-    return response.responseText;
-}
+var rows = sample19_plus;
+
+// function get_data(handleData) {
+//   var path = 'https://web.stanford.edu/~mtessler/corpus_generics/experiments/db/';
+//   var fname = 'sample19_plus.tab';
+//
+//     var response = $.ajax({
+//         type: "GET",
+//         async: true,
+//         url: fullpath,
+//         success:function(data) {
+//           handleData(data);
+//         }
+//     });
+// }
 
 function generate_stim(n, rand) {
-	var contents = get_data(path + fname);
-    var raw = contents;
-        var rows = raw.split('\n');
 
 	    var data = [];
-	    headings = rows[0].split('\t');
+	    headings = _.keys(rows[0]);
 
 	    if (rand == true) {
-		    var total = rows.length - 1;
+		    var total = rows.length;
 		    var rnums = [];
 		    while (rnums.length < n) {
-			    rnum = Math.floor((Math.random() * total) + 1);
+			    rnum = Math.floor((Math.random() * total));
 			    if (rnums.indexOf(rnum) > -1) continue;
 			    rnums.push(rnum);
 		    }
-
 		    for (num of rnums) {
-			    data.push(rows[num].split('\t'));
+			    data.push(
+            _.values(rows[num])
+          );
 		    }
 	    } else {
-		    for (var i = 1; i < n + 1; i++) {
-			    data.push(rows[i].split('\t'));
+		    for (var i = 0; i < n; i++) {
+			    data.push(
+            _.values(rows)
+          );
 		    }
 	    }
-
-
 	    var stim = data.map(function(row) {
 		    return row.reduce(function(result, field, index) {
 			    result[headings[index]] = field;
 			    return result;
 		    }, {});
 	    });
-  
+
 	return stim;
 }
 
@@ -69,7 +71,7 @@ function generate_training_stim(n) {
         }
         return obj;
     }
-    
+
     examples = [
         ["<br><b>Speaker #1</b>: What animal builds dams?  <br><b>Speaker #2</b>:",
         "Beavers build dams.",
@@ -78,7 +80,7 @@ function generate_training_stim(n) {
         "build",
         "4",
 	    "NP"
-        ],  
+        ],
 
 	    ["<br><b>Speaker #1</b>: What disease do ticks carry? <br><b>Speaker #2</b>:",
         "Ticks carry Lyme disease.",
@@ -105,7 +107,7 @@ function generate_training_stim(n) {
         "are",
         "18",
 	    "VP"
-        ],    
+        ],
     ]
     training_examples = [];
     var ntex = examples.length;
@@ -119,4 +121,24 @@ function generate_training_stim(n) {
 	    training_examples.push(make_obj(examples[num]));
     }
     return training_examples;
+}
+
+ function format_context(context) {
+		contexthtml = context.replace(/###speakera(\d+)./g, "<br><b>Speaker #1:</b>");
+		contexthtml = contexthtml.replace(/###speakerb(\d+)./g, "<br><b>Speaker #2:</b>");
+		contexthtml = contexthtml.replace(/###/g, " ");
+		if (!contexthtml.startsWith("<br><b>Speaker #")) {
+				var ssi = contexthtml.indexOf("Speaker #");
+				switch(contexthtml[ssi+"Speaker #".length]) {
+				case "1":
+						contexthtml = "<br><b>Speaker #2:</b> " + contexthtml;
+						break;
+				case "2":
+						contexthtml = "<br><b>Speaker #1:</b> " + contexthtml;
+						break;
+				default:
+						break;
+				}
+		};
+		return contexthtml;
 }

@@ -12,220 +12,83 @@ function make_slides(f) {
   slides.instructions = slide({
     name : "instructions",
     start: function() {
-     //$(".n_entities").html(exp.n_entities);
-     //$(".n_items").html(exp.n_trials);
+      this.startTime = Date.now();
+
+      $("#multi_slider_instructions").append('<tr class="slider_row"><td class="slider_target" id="instructsentence1">Birds that lay eggs.' +
+      '</td><td colspan="2"><div id="instructslider1" class="slider">-------[ ]--------</div></td></tr>');
+
+      utils.match_row_height("#multi_slider_instructions", ".slider_target");
+
+      this.init_sliders();
+
+      var label = "#instructslider1";
+      $(label+ ' .ui-slider-handle').show();
+      $(label).slider({value:0.5});
+      $(label).css({"background":"#99D6EB"});
+      $(label + ' .ui-slider-handle').css({
+        "background":"#667D94",
+        "border-color": "#001F29"
+      })
+      $(label).unbind("mousedown");
+
    },
-    button : function() {
-      exp.go(); //use exp.go() if and only if there is no "present" data.
-    }
-  });
 
+   init_sliders : function() {
+      utils.make_slider("#instructslider1")
+   },
+   button : function() {
+     this.rt = Date.now() - this.startTime;
+     exp.catch_trials.push({
+       "instructions_reading_time": this.rt,
+       "section": "ismplied_prevalence"
+     });
 
-  slides.generateEntities = slide({
-    name: "generateEntities",
+     exp.go(); //use exp.go() if and only if there is no "present" data.
+   }
+ })
+
+  slides.implied_prevalence = slide({
+    name: "implied_prevalence",
+    trial_num: 1,
     present: exp.stimuli,
-
-    present_handle : function(stim) {
-      this.counter = 1;
-	 
-      var generic = stim;
-      this.generic = generic;
-	  var contexthtml = this.format_context(generic.Context);
-	  usentence = generic.Sentence.replace(generic.Sentence, "<u>" + generic.Sentence + "</u>");
-      $(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
-      $(".NP").html(generic.NP);
-      $(".VP").html(generic.VP);
-      $(".err").hide();
-
-
-      this.counter++;
-      
-
-      $("#tableGenerator").html('<table id="tableGenerator"> </table>');
-
-      // create response table
-      for(i=0; i<exp.n_entities; i++){
-
-
-        var dispRow = $(document.createElement('tr'))
-             .attr("id", 'rowp' + i);
-        var numRow = $(document.createElement('tr'))
-             .attr("id", 'rown' + i);
-        var newRow = $(document.createElement('tr'))
-             .attr("id", 'row' + i);
-
-        var freqBox = $(document.createElement('td'))
-             .attr("id", 'freqbox' + i);
-
-        dispRow.append('<td/>');
-        dispRow.append('<td style="text-align:center"><strong>' + stim.NP + "</strong>" + " that " + stim.VP + "</td>");
-        dispRow.append('<td/>');
-        dispRow.appendTo("#tableGenerator");
-
-        numRow.append('<td class="left">0%</td>');
-        numRow.append('<td><p style="text-align:center" id="slider_number' + i + '">---</p></td>');
-        numRow.append('<td class="right">100%</td>');
-        numRow.appendTo("#tableGenerator");
-
-        freqBox.after().html('<div id="freqbox_response' + i + '" class="slider"></div>');
-
-        newRow.append('<td/>');
-        newRow.append(freqBox);
-        newRow.append('<td/>');
-
-        newRow.appendTo("#tableGenerator");
-      }
-      $(".err").hide();
-      this.init_numeric_sliders();
-      exp.sliderPost = []; 
-
-
-    },
-
-
-
-    format_context : function(context) {
-        contexthtml = context.replace(/###speakera(\d+)./g, "<br><b>Speaker #1:</b>");
-        contexthtml = contexthtml.replace(/###speakerb(\d+)./g, "<br><b>Speaker #2:</b>");
-        contexthtml = contexthtml.replace(/###/g, " ");
-        if (!contexthtml.startsWith("<br><b>Speaker #")) {
-            var ssi = contexthtml.indexOf("Speaker #");
-            switch(contexthtml[ssi+"Speaker #".length]) {
-            case "1":
-                contexthtml = "<br><b>Speaker #2:</b> " + contexthtml;
-                break;
-            case "2":
-                contexthtml = "<br><b>Speaker #1:</b> " + contexthtml;
-                break;
-            default:
-                break;
-            }
-        };
-        return contexthtml;
-    },
-
-    init_numeric_sliders : function() {
-        for (i=0; i<exp.n_entities; i++) {
-            utils.make_slider("#freqbox_response" + i, this.make_slider_callback(i));
-        }
-    },
-
-    make_slider_callback : function(i) {
-      return function(event, ui) {
-        exp.sliderPost[i] = ui.value;
-        $("#slider_number" + i).html(Math.round(exp.sliderPost[i]*100) + "%");
-      };
-    },
-
-    button : function() {
-      var freqs = [], intervals = [];
-
-      for(i=0; i<exp.n_entities; i++){
-        var f = parseInt(exp.sliderPost[i]*100);
-        freqs.push(isNaN(f) ? "" : f)
-      }
-
-      // check if all fields are filled
-      if (freqs.indexOf("") == -1) {
-            this.log_responses();
-            exp.stimcounter++;
-            _stream.apply(this);
-      } else {
-        $(".err").show();
-      }
-
-    },
-
-
-    log_responses : function() {
-      exp.data_trials.push({
-        "trial_type" : "single_generic_trial",
-	"tgrep id" : this.generic.Item_ID,
-	"noun phrase" : this.generic.NP,
-	"verb phrase" : this.generic.VP,
-	"verb" : this.generic.Verb,
-	"entire sentence" : this.generic.Sentence,
-    "context" : this.generic.Context,
-    "freq" : exp.sliderPost[0],
-      });
-    },
-
-  });
-
-  slides.priors = slide({
-    name: "priors",
-
-    present: exp.stimscopy,
 
     present_handle : function(stim) {
       this.startTime = Date.now()
       this.stim =  stim;
-      this.trialNum = exp.stimcounter;
-      this.examples = exp.all_names[this.trialNum];
       this.allZeros = 1;
       this.hypothetical = 0;
       this.askDirect = 0;
 
-      $("#tableGenerator").html('<table id="tableGenerator"> </table>');
+      var generic = stim;
+	    var contexthtml = format_context(generic.Context),
+	        usentence = generic.Sentence.replace(generic.NP + " " +generic.VP, "<u>" + generic.NP + " " +generic.VP + "</u>");
+      $(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
 
       $(".prompt").html(
-        "For each of the following types of " + this.stim.CCNP + ", how many <strong>" + this.stim.VP + "</strong>?<br><br>"
-      );
-
-
-
+        "<strong>Assuming that the underlined statement is true</strong>,<br> how likely is it that an individual " + this.stim.NP_singular + " " + this.stim.VP_singular + "?<br><br><em>Please read the dialogue to better understand what is meant by the underlined phrase.</em><br>")
+      $(".slider_row").remove();
 
       // create response table
-      for(i=0; i<exp.n_entities; i++){
+      $("#multi_slider_table").append('<tr class="slider_row"><td class="slider_target" id="sentence0"><strong>' +
+      this.stim.NP_singular + "</strong> that " + this.stim.VP_singular +
+      '</td><td colspan="2"><div id="slider0" class="slider">-------[ ]--------</div></td></tr>');
 
+      utils.match_row_height("#multi_slider_table", ".slider_target");
 
-        var dispRow = $(document.createElement('tr'))
-             .attr("id", 'rowp' + i);
-        var numRow = $(document.createElement('tr'))
-             .attr("id", 'rown' + i);
-        var newRow = $(document.createElement('tr'))
-             .attr("id", 'row' + i);
-
-        var freqBox = $(document.createElement('td'))
-             .attr("id", 'freqbox' + i);
-
-        dispRow.append('<td/>');
-        dispRow.append('<td style="text-align:center"><strong>' + this.stim.VP + "</strong>" + " that " + this.stim.VP + "</td>");
-        dispRow.append('<td/>');
-        dispRow.appendTo("#tableGenerator");
-
-        numRow.append('<td class="left">0%</td>');
-        numRow.append('<td><p style="text-align:center" id="slider_number' + i + '">---</p></td>');
-        numRow.append('<td class="right">100%</td>');
-        numRow.appendTo("#tableGenerator");
-
-        freqBox.after().html('<div id="freqbox_response' + i + '" class="slider"></div>');
-
-        newRow.append('<td/>');
-        newRow.append(freqBox);
-        newRow.append('<td/>');
-
-        newRow.appendTo("#tableGenerator");
-      }
       $(".err").hide();
       this.init_numeric_sliders();
-      exp.sliderPost = []; 
+      exp.sliderPost = [];
     },
 
-
     init_numeric_sliders : function() {
-        for (i=0; i<exp.n_entities; i++) {
-            utils.make_slider("#freqbox_response" + i, this.make_slider_callback(i));
-        }
+        utils.make_slider("#slider0", this.make_slider_callback(0));
     },
 
     make_slider_callback : function(i) {
       return function(event, ui) {
         exp.sliderPost[i] = ui.value;
-        $("#slider_number" + i).html(Math.round(exp.sliderPost[i]*100) + "%");
       };
     },
-
 
 
     button : function() {
@@ -249,17 +112,24 @@ function make_slides(f) {
 
     log_responses : function() {
       var rt = Date.now() - this.startTime;
-      var trialNum = exp.stimscopy.indexOf(this.stim) + 1;
       for(i=0; i<exp.n_entities; i++){
         exp.data_trials.push({
-          "trialNum" : this.trialNum,
-          "tgrep_id" : this.stim.Item_ID, 
-          "NP" : this.stim.NP,
-          "VP" : this.stim.VP,
-          "rt" : rt,
-          "freq" : exp.sliderPost[i],
+          "trial_type" : "prevalence_prior",
+          "tgrep_id" : this.stim.Item_ID,
+          "trial_num" : this.trial_num,
+          "noun_phrase" : this.stim.NP,
+          "verb_phrase" : this.stim.VP,
+          "verb" : this.stim.Verb,
+          "NP_singular": this.stim.NP_singular,
+          "VP_singular": this.stim.VP_singular,
+          "singular_sentence": this.stim.NP_singular + " that " + this.stim.VP_singular,
+          "entire_sentence" : this.stim.Sentence,
+          "context" : this.stim.Context,
+          "response" :exp.sliderPost[i],
+          "rt":rt
         })
       }
+      this.trial_num++;
     }
 
   });
@@ -275,9 +145,9 @@ function make_slides(f) {
         age : $("#age").val(),
         gender : $("#gender").val(),
         education : $("#education").val(),
+        comments : $("#comments").val(),
         problems: $("#problems").val(),
-        fairprice: $("#fairprice").val(),
-        comments : $("#comments").val()
+        fairprice: $("#fairprice").val()
       });
       exp.go(); //use exp.go() if and only if there is no "present" data.
     }
@@ -306,7 +176,7 @@ function init() {
 
   repeatWorker = false;
   (function(){
-      var ut_id = "corpgen-preval-20170421";
+      var ut_id = "corpgen-preval-20171212";
       if (UTWorkerLimitReached(ut_id)) {
         $('.slide').empty();
         repeatWorker = true;
@@ -316,11 +186,10 @@ function init() {
 
   exp.n_entities = 1;
   exp.names = [];
-  exp.all_names = []; 
+  exp.all_names = [];
   exp.trials = [];
   exp.catch_trials = [];
   var stimuli = generate_stim(19, true);
-  console.log(stimuli.length);
   //exp.stimuli = _.shuffle(stimuli).slice(0, 15);
   exp.stimuli = stimuli.slice();
   exp.n_trials = exp.stimuli.length;
@@ -343,8 +212,7 @@ function init() {
   exp.structure=[
     "i0",
     "instructions",
-    "generateEntities",
-    //"priors",
+    "implied_prevalence",
     "subj_info",
     "thanks"
   ];
