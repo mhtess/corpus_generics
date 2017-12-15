@@ -1,0 +1,211 @@
+---
+title: "Corpus generics modeling"
+output: html_notebook
+---
+
+
+```{r}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(langcog)
+library(ggplot2)
+library(ggthemes)
+library(forcats)
+library(knitr)
+library(data.table)
+theme_set(theme_few())
+
+data.path <- "../data/pilots/"
+
+readData <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-trials.csv", sep = "")))
+}
+
+readSubjectInfo <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-subject_information.csv", sep = "")))
+}
+```
+
+
+## Implied prevalence data
+
+Run on 12/13/2017
+
+```{r fig.width = 8, fig.height = 6}
+df2.int <- readData("pilot-listener-prevalence-2")
+# workerid1 had some problem
+df2.int <- df2.int %>% filter(workerid != 1)
+
+df2.int.summary <- df2.int %>%
+  mutate(verb_phrase = gsub(",", "", verb_phrase),
+         generic = paste(noun_phrase, verb_phrase, sep = " "),
+         generic = gsub("&quotechar", "", generic)) %>%
+  group_by(generic) %>%
+  multi_boot_standard(col = "response")
+```
+
+
+
+```{r fig.width = 8}
+df2.int.summary %>%
+  ungroup() %>%
+  mutate(generic = factor(generic, levels = generic[order(mean)])) %>% 
+  ggplot(., aes(x = generic, y = mean, ymin = ci_lower, ymax = ci_upper))+
+  geom_bar(stat = 'identity', position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  coord_flip()+
+  ylab("Implied prevalence")+
+  ylim(0,1)+
+  geom_hline(yintercept = 0.5, lty = 3)
+```
+
+Load model results
+
+```{r}
+m.0 <- fread("../models/results/test-results-corpgen-2betas-L0-smntcs_generic-25000_burn12500_lag20_chain1.csv")
+
+
+m.pred <- m.0 %>% filter(param == "generic") %>% rename(generic = category) %>%
+  select(generic, val) %>%
+  group_by(generic) %>%
+  summarize(MAP = estimate_mode(val),
+            cred_upper = hdi_upper(val),
+            cred_lower = hdi_lower(val))
+
+md <- left_join(
+  df2.int.summary, m.pred
+  )
+```
+```{r}
+with(md, cor(MAP, mean))
+
+ggplot(md, aes ( x = MAP, xmin = cred_lower, xmax = cred_upper,
+                 y = mean, ymin = ci_lower, ymax = ci_upper ))+
+  geom_point()+
+  geom_errorbar()+
+  geom_errorbarh()+
+  coord_fixed()+
+  xlim(0, 1)+
+  ylim(0, 1)
+```
+
+
+### Prevalence priors
+
+load prevalence prior data
+
+```{r}
+df.cc.2 <- readData("pilot-ccepe-2")
+```
+
+
+```{r}
+df.pe.2 <- df.cc.2 %>% filter(trial_type == "prevalence_prior") %>%
+  mutate(verb_phrase = gsub("&quotechar","",verb_phrase),
+         verb_phrase = gsub(",","",verb_phrase),
+         response = as.numeric(as.character(response)))
+
+
+
+```
+
+
+##### Marginal distributions on prevalence
+
+```{r gen-prevprior-marginals, fig.width = 8, fig.height = 5}
+bind_rows(
+  df.pe.2 %>% 
+  rename(prevalence = response) %>%
+  mutate(src = 'data') %>% 
+  select(verb_phrase, src, prevalence),
+  m.samp.prevalence.prior %>% 
+    rename(verb_phrase = property) %>%
+    mutate(src = 'model') 
+  ) %>%
+ggplot(. , aes( x = prevalence, color = src))+
+  geom_density(size = 1, aes( y = ..scaled.. ))+
+  facet_wrap( ~ verb_phrase, nrow = 3)+
+  scale_color_solarized()+
+  scale_x_continuous(limits = c(0,1), breaks = c(0, 0.5, 1)) +
+  scale_y_continuous(limits = c(0,1), breaks = c(0, 0.5, 1)) +
+  theme(strip.text.y = element_text(angle = 0))
+```
+
+
+
+```{r gen-prevprior-forward}
+m.samp <- m.0 %>% filter(type == "prior", param != "score")
+
+m.prior.summary <- m.samp %>%
+  group_by(param, property, category) %>% 
+  summarize(MAP = estimate_mode(val),
+            cred_upper = hdi_upper(val),
+            cred_lower = hdi_lower(val))
+
+#Forward sample from posterior on parameters
+m.samp.prior.params <- m.samp %>%
+    mutate(parameter = paste(param, category, sep = "_")) %>%
+    select(-param, -category, -type) %>%
+    mutate(item = paste(parameter, property, sep = "_")) %>%
+    group_by(item) %>%
+    mutate(iteration = ave(item==item, item, FUN=cumsum)) %>%
+    ungroup() %>%
+    select(-item)
+  
+# m.samp.prevalence.prior <- m.samp.prior.params %>%
+#     group_by(parameter, property, iteration) %>%
+#     spread(parameter, val) %>%
+#     rowwise() %>%
+#     mutate(isPresent = rbinom(1, 1, prob = mixture_NA),
+#        prevalence = ifelse(isPresent == 1, 
+#                            rbeta(n = 1, 
+#                                  shape1 = stableFreq_mean* stableFreq_sampleSize,
+#                                  shape2 = (1-stableFreq_mean)*stableFreq_sampleSize),
+#                            rbeta(n = 1,
+#                                  shape1 = 1,
+#                                  shape2 = 100))) %>%
+#     ungroup() %>%
+#     select(property, prevalence)
+
+
+m.samp.prevalence.prior <- m.samp.prior.params %>%
+    group_by(parameter, property, iteration) %>%
+    spread(parameter, val) %>%
+    rowwise() %>%
+    mutate(component1 = rbinom(1, 1, prob = mixture_NA),
+       prevalence = ifelse(component1 == 1, 
+                           rbeta(n = 1, 
+                                 shape1 = stableFreq1_mean* stableFreq1_sampleSize,
+                                 shape2 = (1-stableFreq1_mean)*stableFreq1_sampleSize),
+                           rbeta(n = 1,
+                                 shape1 = stableFreq2_mean* stableFreq2_sampleSize,
+                                 shape2 = (1-stableFreq2_mean)*stableFreq2_sampleSize))) %>%
+    ungroup() %>%
+    select(property, prevalence)
+```
+
+##### Marginal distributions on prevalence
+
+```{r gen-prevprior, fig.width = 8, fig.height = 5}
+bind_rows(
+  df.pe.2 %>% 
+  rename(prevalence = response) %>%
+  mutate(src = 'data') %>% 
+  select(verb_phrase, src, prevalence),
+  m.samp.prevalence.prior %>% 
+    rename(verb_phrase = property) %>%
+    mutate(src = 'model') 
+  ) %>%
+ggplot(. , aes( x = prevalence, color = src))+
+  geom_density(size = 1, aes( y = ..scaled.. ))+
+  facet_wrap( ~ verb_phrase, nrow = 3)+
+  scale_color_solarized()+
+  scale_x_continuous(limits = c(0,1), breaks = c(0, 0.5, 1)) +
+  scale_y_continuous(limits = c(0,1), breaks = c(0, 0.5, 1)) +
+  theme(strip.text.y = element_text(angle = 0))
+```
