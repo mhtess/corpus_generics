@@ -71,3 +71,16 @@ n = 20 ($1.00) --> $20 + 20% = $24
 - 12/12/17
 - parallel setup to CCEPE-2
 - n = 18 ($1.00) --> $18 + 3.6 fee = $21.6
+[12/18/17]
++ n = 18 ($1.00) --> $18 + 3.6 = 21.6
+
+# Endorsement (w/ manipulated prevalence)
+
+## Switchboard
+- 12/27/17
+- analogous to Prevalence task
+- "Suppose that, in reality, X% 'have feature'"
+- 3 prevalence intervals: 5-15%, 25-35%, 55-65%
+- 2 AFC
+- goal: n = 20 / item X frequencies
+- n = 60 ($1.00) --> $60 + 12 = $72
