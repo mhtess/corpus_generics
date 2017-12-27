@@ -96,7 +96,7 @@ function make_slides(f) {
       var rt = Date.now() - this.startTime;
       for(i=0; i<exp.n_entities; i++){
         exp.data_trials.push({
-          "trial_type" : "prevalence_prior",
+          "trial_type" : "endorsement",
           "tgrep_id" : this.stim.Item_ID,
           "trial_num" : this.trial_num,
           "noun_phrase" : this.stim.NP,
@@ -107,6 +107,7 @@ function make_slides(f) {
           "singular_sentence": this.stim.NP_singular + " that " + this.stim.VP_singular,
           "entire_sentence" : this.stim.Sentence,
           "context" : this.stim.Context,
+          "prevalence": this.stim.prevalence,
           "response" : response,
           "rt":rt
         })
@@ -173,12 +174,19 @@ function init() {
   exp.catch_trials = [];
   var stimuli0 = generate_stim(19, true);
 
-  var frequencies = [10, 35, 60];
+  var frequencies = [
+    5, 8, 11, 13, 15, 15,
+    25, 28, 31, 33, 35, 35,
+    55, 58, 61, 63, 65, 65,
+  ];
+
+  var shuffledFrequencies = _.shuffle(frequencies)
+  shuffledFrequencies.push(_.sample(frequencies))
 
   var stimuli = []
   for (s=0; s<stimuli0.length; s++){
     var stim = stimuli0[s];
-    var prevalence = _.sample(frequencies)
+    var prevalence = shuffledFrequencies.pop()
     stimuli.push(_.extend(stim, {prevalence}))
   }
 
@@ -205,7 +213,6 @@ function init() {
     "i0",
     "instructions",
     "endorsement",
-    // "implied_prevalence",
     "subj_info",
     "thanks"
   ];
