@@ -59,25 +59,15 @@
     <h3>Instructions</h3>
     <p style="font-size:18px">In this experiment, you will read dialogues between two people. One phrase or sentence will be underlined, as in the following short snippet:</p>
     <p style="text-align: left;">
-    <strong>Speaker #1</strong>: "I was reading the other day about how birds reproduce."<br>
-  <strong>Speaker #2</strong>: "I know that <u>birds lay eggs</u>. What else is there to it?"
+    <strong>Speaker #1</strong>: "I was reading the other day about pangolins."<br>
+  <strong>Speaker #2</strong>: "I know that <u>pangolins are red</u>, but don't know much else about them."
     </p>
     <div style="font-size: 18px">
-    You will be asked to interpret this statement by rating how many individual members of the category, the speaker believes, have the property (for example: how many individual birds "lay eggs"), using a slider bar. For example, the prompt after the dialogue may read:
+      You will then be given information about how many of the underlined category have the underlined property (for example: how many pangolins are red).
+      You will then be asked whether or not you agree with the underlined statement ("Pangolins are red").
+
     </div>
-
-    <p style="text-align: left;">
-    What percentage of individual birds does the speaker think "lay eggs"?
-    </p>
-
-    <table id="multi_slider_instructions" class="slider_table">
-      <tr><td></td><td class="left">0%</td><td class="right">100%</td></tr>
-    </table>
-
-    <div style="text-align: left; font-size:18px">
-      For this example, we have put the slider around the middle of the bar because "laying eggs" is only something female birds can do. So, if you were to come across a random, individual bird, it's equally likely that they do or do not lay eggs (because it depends if it's a male or female). Please try to analyze your intuitions as best you can to give a reliable response.
-    </div>
-
+<br>
     <button onclick="_s.button()">I have read the instructions and am ready to begin.</button>
 
   </div>
@@ -86,16 +76,17 @@
   <p class="case" style="text-align: left;"></p>
   <p class="prompt"></p>
   <div id='sentence0'></div>
-  <table id="multi_slider_table" class="slider_table">
-    <tr>
-      <!-- <td></td> -->
-      <!-- <td class="left">0%</td>
-      <td class="right">100%</td> -->
-    </tr>
-  </table>
-
+  <div id="endorsement_choices">
+    <label>
+      <input type="radio"  name="speaker" value="No"/>No
+    </label>
+    <label>
+      <input type="radio"  name="speaker" value="Yes"/>Yes
+    </label>
+  </div>
+  <br>
   <button onclick="_s.button()">Continue</button>
-  <p class="err" style="color:red">Please set the slider.</p>
+  <p class="err" style="color:red">Please select a response.</p>
 </div>
 
 

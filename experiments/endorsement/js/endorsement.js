@@ -53,6 +53,8 @@ function make_slides(f) {
     present: exp.stimuli,
 
     present_handle : function(stim) {
+      $('input[name="speaker"]').prop('checked', false);
+
       this.startTime = Date.now()
       this.stim =  stim;
       this.allZeros = 1;
@@ -66,46 +68,19 @@ function make_slides(f) {
 
       $(".prompt").html(
         "Suppose that, in reality, " +
-         // this.stim.prevalence +
-        "25% of " + this.stim.NP+ " <em>" + this.stim.VP + "</em>. Would you agree or disagree with the underlined phrase?<br><br><em>Please read the dialogue to better understand what is meant by the underlined phrase.</em><br>")
-      $(".slider_row").remove();
-
-      // create response table
-      $("#sentence0").html('% <strong>' +
-      this.stim.NP+ "</strong> that " + this.stim.VP + "")
-      $("#multi_slider_table").append('<tr class="slider_row"><td class="left">0%</td><td colspan="2"><div id="slider0" class="slider">-------[ ]--------</div></td><td class="right">100%</td></tr>');
-      // $("#multi_slider_table").append('<tr class="slider_row"><td class="slider_target" id="sentence0"><strong> % ' +
-      // this.stim.NP+ "</strong> that " + this.stim.VP +
-      // '</td><td colspan="2"><div id="slider0" class="slider">-------[ ]--------</div></td></tr>');
-
-      utils.match_row_height("#multi_slider_table", ".slider_target");
+         this.stim.prevalence +
+        "% of " + this.stim.NP+ ' "' + this.stim.VP + '".<br><em>Please read the dialogue to better understand what is meant by the underlined phrase.</em><br><strong>Would you agree or disagree with the underlined phrase?</strong><br>')
 
       $(".err").hide();
-      this.init_numeric_sliders();
-      exp.sliderPost = [];
     },
-
-    init_numeric_sliders : function() {
-        utils.make_slider("#slider0", this.make_slider_callback(0));
-    },
-
-    make_slider_callback : function(i) {
-      return function(event, ui) {
-        exp.sliderPost[i] = ui.value;
-      };
-    },
-
 
     button : function() {
+      var speakerResponse = $('input[name="speaker"]:checked').val();
+
       var freqs = [], intervals = [];
 
-      for(i=0; i<exp.n_entities; i++){
-        var f = parseInt(exp.sliderPost[i]*100);
-        freqs.push(isNaN(f) ? "" : f)
-      }
-
       // check if all fields are filled
-      if (freqs.indexOf("") == -1) {
+      if (speakerResponse) {
             this.log_responses();
             exp.stimcounter++;
             _stream.apply(this);
@@ -116,6 +91,8 @@ function make_slides(f) {
     },
 
     log_responses : function() {
+      response = $('input[name="speaker"]:checked').val() == "Yes" ?  1 : 0;
+
       var rt = Date.now() - this.startTime;
       for(i=0; i<exp.n_entities; i++){
         exp.data_trials.push({
@@ -130,7 +107,7 @@ function make_slides(f) {
           "singular_sentence": this.stim.NP_singular + " that " + this.stim.VP_singular,
           "entire_sentence" : this.stim.Sentence,
           "context" : this.stim.Context,
-          "response" :exp.sliderPost[i],
+          "response" : response,
           "rt":rt
         })
       }
@@ -194,11 +171,20 @@ function init() {
   exp.all_names = [];
   exp.trials = [];
   exp.catch_trials = [];
-  var stimuli = generate_stim(19, true);
-  // console.log(stimuli)
-  //exp.stimuli = _.shuffle(stimuli).slice(0, 15);
+  var stimuli0 = generate_stim(19, true);
+
+  var frequencies = [10, 35, 60];
+
+  var stimuli = []
+  for (s=0; s<stimuli0.length; s++){
+    var stim = stimuli0[s];
+    var prevalence = _.sample(frequencies)
+    stimuli.push(_.extend(stim, {prevalence}))
+  }
+
   exp.stimuli = stimuli.slice();
   exp.n_trials = exp.stimuli.length;
+  // console.log(exp.stimuli)
   exp.stimcounter = 0;
 
   // exp.womenFirst = _.sample([true, false])
@@ -216,9 +202,9 @@ function init() {
     };
   //blocks of the experiment:
   exp.structure=[
-    "endorsement",
     "i0",
     "instructions",
+    "endorsement",
     // "implied_prevalence",
     "subj_info",
     "thanks"
