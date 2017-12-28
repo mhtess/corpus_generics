@@ -68,11 +68,19 @@ n = 20 ($1.00) --> $20 + 20% = $24
 
 ## Switchboard
 
+#### Prevalence-2
+
 - 12/12/17
 - parallel setup to CCEPE-2
 - n = 18 ($1.00) --> $18 + 3.6 fee = $21.6
 [12/18/17]
 + n = 18 ($1.00) --> $18 + 3.6 = 21.6
+
+#### Prevalence-3
+
+- 12/28/17
+- similar to prevalence-2 but with a percentage slider
+- n = 18 ($1.00) --> $18 + 3.6 fee = $21.6
 
 # Endorsement (w/ manipulated prevalence)
 
