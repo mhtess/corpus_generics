@@ -65,7 +65,7 @@ function make_slides(f) {
       $(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
 
       $(".prompt").html(
-        "Consider the underlined statement above. <br>What percentage of individual <em>" + this.stim.NP+ "</em> does the speaker think <em>" + this.stim.VP + "</em>?<br><br><em>Please read the dialogue to better understand what is meant by the underlined phrase.</em><br>")
+        'Consider the underlined statement above. <br>What percentage of individual <em>' + this.stim.NP+ '</em> does the speaker think "' + this.stim.VP + '"?<br><br><em>Please read the dialogue to better understand what is meant by the underlined phrase.</em><br>')
       $(".slider_row").remove();
 
       // create response table
@@ -117,7 +117,7 @@ function make_slides(f) {
       var rt = Date.now() - this.startTime;
       for(i=0; i<exp.n_entities; i++){
         exp.data_trials.push({
-          "trial_type" : "prevalence_prior",
+          "trial_type" : "implied_percentage",
           "tgrep_id" : this.stim.Item_ID,
           "trial_num" : this.trial_num,
           "noun_phrase" : this.stim.NP,
