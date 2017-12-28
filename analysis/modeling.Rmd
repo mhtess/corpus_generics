@@ -50,6 +50,7 @@ df2.int.summary <- df2.int %>%
 ```
 
 
+Visualize implied prevalence data
 
 ```{r fig.width = 8}
 df2.int.summary %>%
@@ -64,13 +65,41 @@ df2.int.summary %>%
   geom_hline(yintercept = 0.5, lty = 3)
 ```
 
+## Endorsement data
+
+Run on 12/27/2017
+
+```{r fig.width = 8, fig.height = 6}
+df.endorse <- readData("endorsement-1")
+
+df.endorse.summary <- df.endorse %>%
+  mutate(verb_phrase = gsub(",", "", verb_phrase),
+         generic = paste(noun_phrase, verb_phrase, sep = " "),
+         generic = gsub("&quotechar", "", generic),
+         prevGroup = ifelse(prevalence < 20, 0.075,
+                            ifelse(prevalence < 40, 0.275,
+                                   ifelse(prevalence < 70, 0.575, -99)))) %>%
+  group_by(generic, prevGroup) %>%
+  multi_boot_standard(col = "response")
+```
+
+
 Load model results
 
 ```{r}
-m.0 <- fread("../models/results/test-results-corpgen-2betas-L0-smntcs_generic-25000_burn12500_lag20_chain1.csv")
+#m.0 <- fread("../models/results/results-corpgen-2betas-L0-smntcs_generic-25000_burn12500_lag20_chain1.csv")
+#m.0 <- fread("../models/results/results-corpgen-n36-nullMixture-L0-smntcs_generic-50000_burn25000_lag20_chain1.csv")
+#m.0 <- fread("../models/results/results-corpgen-n36-singleBetaPrior-L0-smntcs_generic-50000_burn25000_lag20_chain1.csv")
+m.0 <- fread('../models/results/results-corpgen-singleBetaPrior-L0-S1partialData-smntcs_generic-10000_burn5000_lag20_chain1.csv')
+
+```
 
 
-m.pred <- m.0 %>% filter(param == "generic") %>% rename(generic = category) %>%
+Implied prevalence data
+
+```{r}
+m.pred <- m.0 %>% 
+  filter(param == "generic") %>% rename(generic = category) %>%
   select(generic, val) %>%
   group_by(generic) %>%
   summarize(MAP = estimate_mode(val),
@@ -80,20 +109,59 @@ m.pred <- m.0 %>% filter(param == "generic") %>% rename(generic = category) %>%
 md <- left_join(
   df2.int.summary, m.pred
   )
-```
-```{r}
+
+
+md <- md %>% mutate(sqErr = (MAP-mean)^2)
+
 with(md, cor(MAP, mean))
 
 ggplot(md, aes ( x = MAP, xmin = cred_lower, xmax = cred_upper,
                  y = mean, ymin = ci_lower, ymax = ci_upper ))+
   geom_point()+
-  geom_errorbar()+
-  geom_errorbarh()+
+  geom_errorbar(alpha = 0.3)+
+  geom_errorbarh(alpha = 0.3)+
+  coord_fixed()+
+  xlim(0.15, 0.9)+
+  ylim(0.15, 0.9)
+```
+Endorsement data
+```{r}
+
+m.pred.endorse <- m.0 %>% 
+  filter(type == "endorsement") %>% 
+  rename(generic = category, prevGroup = param) %>%
+  select(generic, prevGroup, val) %>%
+  group_by(generic, prevGroup) %>%
+  summarize(MAP = estimate_mode(val),
+            cred_upper = hdi_upper(val),
+            cred_lower = hdi_lower(val)) %>%
+  ungroup() %>%
+  mutate(prevGroup = as.numeric(as.character(prevGroup)))
+
+md.endorse <- left_join(
+  df.endorse.summary, m.pred.endorse
+  ) %>% mutate(sqErr = (MAP-mean)^2)
+
+with(md.endorse, cor(MAP, mean))
+
+ggplot(md.endorse, aes ( x = MAP, xmin = cred_lower, xmax = cred_upper,
+                 y = mean, ymin = ci_lower, ymax = ci_upper ))+
+  geom_point()+
+  geom_errorbar(alpha = 0.3)+
+  geom_errorbarh(alpha = 0.3)+
   coord_fixed()+
   xlim(0, 1)+
   ylim(0, 1)
 ```
 
+
+Speaker optimality
+```{r}
+m.0 %>%
+  filter(param == "speakerOptimality") %>%
+  ggplot(., aes( x= val)) + 
+  geom_histogram()
+```
 
 ### Prevalence priors
 
@@ -109,9 +177,6 @@ df.pe.2 <- df.cc.2 %>% filter(trial_type == "prevalence_prior") %>%
   mutate(verb_phrase = gsub("&quotechar","",verb_phrase),
          verb_phrase = gsub(",","",verb_phrase),
          response = as.numeric(as.character(response)))
-
-
-
 ```
 
 
@@ -157,22 +222,6 @@ m.samp.prior.params <- m.samp %>%
     ungroup() %>%
     select(-item)
   
-# m.samp.prevalence.prior <- m.samp.prior.params %>%
-#     group_by(parameter, property, iteration) %>%
-#     spread(parameter, val) %>%
-#     rowwise() %>%
-#     mutate(isPresent = rbinom(1, 1, prob = mixture_NA),
-#        prevalence = ifelse(isPresent == 1, 
-#                            rbeta(n = 1, 
-#                                  shape1 = stableFreq_mean* stableFreq_sampleSize,
-#                                  shape2 = (1-stableFreq_mean)*stableFreq_sampleSize),
-#                            rbeta(n = 1,
-#                                  shape1 = 1,
-#                                  shape2 = 100))) %>%
-#     ungroup() %>%
-#     select(property, prevalence)
-
-
 m.samp.prevalence.prior <- m.samp.prior.params %>%
     group_by(parameter, property, iteration) %>%
     spread(parameter, val) %>%
@@ -183,13 +232,61 @@ m.samp.prevalence.prior <- m.samp.prior.params %>%
                                  shape1 = stableFreq1_mean* stableFreq1_sampleSize,
                                  shape2 = (1-stableFreq1_mean)*stableFreq1_sampleSize),
                            rbeta(n = 1,
-                                 shape1 = stableFreq2_mean* stableFreq2_sampleSize,
-                                 shape2 = (1-stableFreq2_mean)*stableFreq2_sampleSize))) %>%
+                                 shape1 = 1,
+                                 shape2 = 100))) %>%
     ungroup() %>%
     select(property, prevalence)
+
+
+# m.samp.prevalence.prior <- m.samp.prior.params %>%
+#     group_by(parameter, property, iteration) %>%
+#     spread(parameter, val) %>%
+#     rowwise() %>%
+#     mutate(component1 = rbinom(1, 1, prob = mixture_NA),
+#        prevalence = ifelse(component1 == 1, 
+#                            rbeta(n = 1, 
+#                                  shape1 = stableFreq1_mean* stableFreq1_sampleSize,
+#                                  shape2 = (1-stableFreq1_mean)*stableFreq1_sampleSize),
+#                            rbeta(n = 1,
+#                                  shape1 = stableFreq2_mean* stableFreq2_sampleSize,
+#                                  shape2 = (1-stableFreq2_mean)*stableFreq2_sampleSize))) %>%
+#     ungroup() %>%
+#     select(property, prevalence)
+
+
+
+
+
 ```
 
 ##### Marginal distributions on prevalence
+```{r}
+bind_rows(
+  df.pe.2 %>% 
+  rename(prevalence = response) %>%
+  mutate(src = 'data') %>% 
+  select(verb_phrase, src, prevalence),
+  m.samp.prevalence.prior %>% 
+    rename(verb_phrase = property) %>%
+    mutate(src = 'model') 
+  ) %>%
+ggplot(.,
+           aes( x = prevalence, color = src, lty = src))+
+    #geom_density(aes(y = ..scaled..), adjust = 1.3, size = 1)+
+    #scale_fill_manual(values = c("#636363", "#d7191c", "#2b83ba"))+
+    stat_ecdf(size = 1)+
+    scale_color_manual(values = c("#636363", "#d7191c", "#2b83ba"))+
+    scale_alpha_manual(values = c(0.6, 0.4, 0))+
+    facet_wrap(~verb_phrase, nrow = 3)+
+    scale_linetype_manual(values = c(1, 4, 3))+
+    scale_x_continuous(breaks = c(0, 1), limits= c(0, 1))+
+    scale_y_continuous(breaks = c(0, 1), limits= c(0, 1))+
+    #coord_fixed()+
+    xlab("prevalence") +
+    ylab("Cumulative probability density")+
+    theme(legend.title = element_blank(), legend.position = 'bottom')
+
+```
 
 ```{r gen-prevprior, fig.width = 8, fig.height = 5}
 bind_rows(
@@ -209,3 +306,7 @@ ggplot(. , aes( x = prevalence, color = src))+
   scale_y_continuous(limits = c(0,1), breaks = c(0, 0.5, 1)) +
   theme(strip.text.y = element_text(angle = 0))
 ```
+- try simpler priors (e.g., 3 parameter betas, or single beta)
+- more data in listener task & prior task
+- make a PREVLANECE version of listener task and collect some data
+skype early next week

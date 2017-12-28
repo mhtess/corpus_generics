@@ -8,14 +8,16 @@ var targetUtterance = process.argv[process.argv.length - 2]
 var responseDictionary = { "agree-key": 1, "disagree-key": 0 };
 
 var prior_dataPath = "../data/pilots/pilot-ccepe-2/",
-    listener_dataPath = "../data/pilots/pilot-listener-prevalence-2/";
-    // listener_dataPath = "../data/pilots/pilot-listener-prevalence-1/";
+    listener_dataPath = "../data/pilots/pilot-listener-prevalence-2/",
+    endorse_dataPath = "../mturk/endorsement-1/"
 var priorFile = prior_dataPath + "pilot-ccepe-2-trials.csv",
- 		listenerFile = listener_dataPath + "pilot-listener-prevalence-2-trials.csv";
+ 		listenerFile = listener_dataPath + "pilot-listener-prevalence-2-trials.csv",
+    endorseFile = endorse_dataPath + "endorsement-1-trials.csv"
      // listenerFile = listener_dataPath + "pilot-listener-prevalence-1-trials.csv";
 
 var d_prior = dataFrame(utils.readCSV(priorFile).data, ["response"]),
- 		d_listener =  dataFrame(utils.readCSV(listenerFile).data, ["response"]);
+ 		d_listener =  dataFrame(utils.readCSV(listenerFile).data, ["response"]),
+    d_endorse =  dataFrame(utils.readCSV(endorseFile).data, ["prevalence","response"]);
     // d_listener =  dataFrame(utils.readCSV(listenerFile).data, ["freq"]);
 
 var data = {
@@ -33,9 +35,17 @@ var data = {
       property: d.verb_phrase.replace("&quotechar", "").replace(",", ""),
       generic: d.noun_phrase + " " + d.verb_phrase.replace("&quotechar", "").replace(",", "")
 		})
-	}, filter(function(d){return d.workerid != "1" }, d_listener))
+	}, filter(function(d){return d.workerid != "1" }, d_listener)),
+  endorse: map(function(d){
+		extend(d, {
+  		roundedPrevalence: utils.closest(midBins, d.prevalence / 100),
+      property: d.verb_phrase.replace("&quotechar", "").replace(",", "")
+		})
+	}, d_endorse)
 };
-// console.log(midBins.slice(1))
+
+
+// console.log(data.endorse)
 
 var utterancePrior = Infer({model: function(){return uniformDraw([targetUtterance,"silence"])}});
 
@@ -58,31 +68,34 @@ var nullParams = {a:1, b:100}, nullDistribution = Beta(nullParams);
 
 var model = function(){
 
+  var speakerOptimality = uniformDrift({a:0, b:10, width: 1});
+
 	foreach(items, function(item){
 
 		var sentenceData = {
 			listener: _.filter(data.listener, {property: item}),
-			prior: _.filter(data.prior, {property: item})
+			prior: _.filter(data.prior, {property: item}),
+      endorsement: _.filter(data.endorse, {property: item})
 		}
 
     // console.log(sentenceData.prior)
 
 		// prior parameters
-		var theta = uniformDrift({a: 0, b: 1, width:0.2})
+		var theta = 1//uniformDrift({a: 0, b: 1, width:0.2})
 
 		var betaParams = {
 			g: uniformDrift({a: 0, b: 1, width: 0.2}),
 			d: uniformDrift({a: 0, b: 100, width: 20})
 		}
 
-    var otherBetaParams = {
-			g: uniformDrift({a: 0, b: 1, width: 0.2}),
-			d: uniformDrift({a: 0, b: 100, width: 20})
-		}
+    // var otherBetaParams = {
+		// 	g: uniformDrift({a: 0, b: 1, width: 0.2}),
+		// 	d: uniformDrift({a: 0, b: 100, width: 20})
+		// }
 
 		var priorParams1 = betaShape(betaParams);
-    var priorParams2 = betaShape(otherBetaParams);
-
+    // var priorParams2 = betaShape(otherBetaParams);
+    var priorParams2 = nullParams;
     // console.log(item + " " + _.map(sentenceData.prior, "roundedPrevalence"))
     // display("before prevalence prior factor")
 		// observe structured prior data
@@ -113,8 +126,8 @@ var model = function(){
 		query.add(["prior","mixture", item, "NA"], theta)
 		query.add(["prior","stableFreq1", item, "mean"], betaParams.g)
 		query.add(["prior","stableFreq1", item, "sampleSize"], betaParams.d)
-    query.add(["prior","stableFreq2", item, "mean"], otherBetaParams.g)
-		query.add(["prior","stableFreq2", item, "sampleSize"], otherBetaParams.d)
+    // query.add(["prior","stableFreq2", item, "mean"], otherBetaParams.g)
+		// query.add(["prior","stableFreq2", item, "sampleSize"], otherBetaParams.d)
 
 		var statePrior = Infer({model: function(){
 			sample(flip(theta) ?
@@ -128,13 +141,14 @@ var model = function(){
 		  Infer({model: function(){
 		    var state = sample(statePrior)
 				var theta = sample(thetaPrior);
+        // condition (state > theta)
+        // factor( Math.log(state) )
 		    var m = meaning(utterance, state, theta)
 		    condition(m)
 		    return state
 		 }})}, 10000)
 
     var l0predictions = listener0("generic")
-
 		var responseData = _.map(sentenceData.listener, "roundedPrevalence")
 
 		mapData({data:responseData}, function(d){
@@ -143,15 +157,38 @@ var model = function(){
 			observe(l0predictions, d)
 		})
 
-    // var listenerScr = sum(map(function(d){return l0predictions.score(d)}, responseData))
-    // query.add(["listener", "score", item, sentenceData.listener[0].generic], listenerScr )
+    query.add(["listener", targetUtterance, item, sentenceData.listener[0].generic], expectation(l0predictions) )
 
-		query.add(["listener", targetUtterance, item, sentenceData.listener[0].generic], expectation(l0predictions) )
+
+    var speaker1 = cache(function(prevalence) {
+     Infer({model: function(){
+       var utterance = sample(utterancePrior);
+       var L0 = listener0(utterance);
+       factor(speakerOptimality * L0.score(prevalence))
+       return utterance === targetUtterance ? 1 : 0
+     }})}, 10000)
+
+
+    var prevalenceLevels = levels(sentenceData.endorsement, "roundedPrevalence");
+
+    foreach(prevalenceLevels, function(prevalence){
+      var s1predictions = speaker1(prevalence)
+      var prevResponseData = _.map(_.filter(sentenceData.endorsement,
+        {roundedPrevalence: prevalence}),"response")
+
+        mapData({data:prevResponseData}, function(d){
+     			var scr = s1predictions.score(d)
+     			scr == -Infinity ? display(item + " " + prevalence + " " + d) : null
+     			observe(s1predictions, d)
+     		})
+      query.add(["endorsement", prevalence, item, sentenceData.listener[0].generic], expectation(s1predictions) )
+
+    })
 
 
 	})
 
-	// query.add(["param","speakerOptimality","s1","na"], speakerOptimality.s1)
+	query.add(["param","speakerOptimality","s1","NA"], speakerOptimality)
   // query.add(["param","noise","s1","na"], noise)
   // query.add(["param","fixedThreshold","s1","na"], fixedThreshold)
 
@@ -159,10 +196,10 @@ var model = function(){
 }
 
 // 1500 iterations / min (including burn-in)
-var totalIterations = 50000, lag = 20;
+var totalIterations = 10000, lag = 20;
 var mhiter = totalIterations/lag, burn = totalIterations / 2;
 
-var outfile = 'results-corpgen-2betas-L0-'+'smntcs_'+targetUtterance+"-"+ totalIterations+'_burn'+burn+'_lag'+lag+'_chain'+chain+'.csv'
+var outfile = 'results-corpgen-singleBetaPrior-L0-S1partialData-smntcs_'+targetUtterance+"-"+ totalIterations+'_burn'+burn+'_lag'+lag+'_chain'+chain+'.csv'
 
 var posterior = Infer({
   model: model,

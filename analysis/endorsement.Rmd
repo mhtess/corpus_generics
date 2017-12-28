@@ -1,0 +1,65 @@
+---
+title: "Endorsement"
+output: html_notebook
+---
+
+
+
+
+```{r}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(langcog)
+library(ggplot2)
+library(ggthemes)
+library(forcats)
+library(knitr)
+library(data.table)
+theme_set(theme_few())
+
+data.path <- "../data/pilots/"
+
+readData <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-trials.csv", sep = "")))
+}
+
+readSubjectInfo <- function(project){
+  return(read.csv(paste(data.path, project, "/", project, "-subject_information.csv", sep = "")))
+}
+```
+
+```{r}
+df.endorse.summary <- df.trials %>%
+  mutate(prevGroup = ifelse(prevalence < 20, 10,
+                            ifelse(prevalence < 40, 30,
+                                   ifelse(prevalence < 70, 60, 99))),
+         entire_sentence = gsub("&quotechar", "", entire_sentence)) %>%
+  group_by(noun_phrase, verb_phrase, entire_sentence, prevGroup) %>%
+  multi_boot_standard(col = 'response')
+
+  summarize( n = n(), propEndorse = mean(response))
+```
+
+
+```{r fig.width = 5}
+ggplot(df.endorse.summary, aes(x = entire_sentence, y = mean, ymin = ci_lower, ymax = ci_upper,
+                               fill = factor(prevGroup), group = factor(prevGroup)))+
+  geom_col(position = position_dodge())+
+  geom_errorbar(position = position_dodge())+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1 , hjust = 1))
+```
+
+
+```{r}
+ggplot(df.endorse.summary, aes( x = prevGroup, y = propEndorse))+
+  geom_line()+
+  facet_wrap(~entire_sentence)
+```
+
+
+
