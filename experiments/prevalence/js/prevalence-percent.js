@@ -65,7 +65,7 @@ function make_slides(f) {
       $(".case").html(contexthtml + " " + usentence); // Replace .Sentence with the name of your sentence column
 
       $(".prompt").html(
-        'Consider the underlined statement above. <br>What percentage of individual "' + this.stim.NP+ '" does the speaker think "' + this.stim.VP + '"?<br><br><em>Please read the dialogue to better understand what is meant by the underlined phrase.</em><br>')
+        'Consider the underlined statement above. <br>What percentage of individual ' + this.stim.NP+ ' does the speaker think "' + this.stim.VP + '"?<br><br><em>Please read the dialogue to better understand what is meant by the underlined phrase.</em><br>')
       $(".slider_row").remove();
 
       // create response table
